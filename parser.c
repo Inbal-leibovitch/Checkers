@@ -286,6 +286,10 @@ void parse(char str[MAXCommand]) {
 	 *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< NUM_SOLUTIONS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	 */
 	else if (strcmp(token, "num_solutions") == 0) {
+		if (GameMode == 0){
+			printf(INVALIDCOMMAND);
+			return;
+		}
 		numSolutions();
 		return;
 	}

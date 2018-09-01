@@ -39,6 +39,7 @@ void reset();
 void exitGame();
 int validateBoard();
 int validValue(int x, int y, int z);
-freeUndoRedo();
+void freeUndoRedo();
+void freeBoard();
 
 #endif /* ACTIONS_H_ */

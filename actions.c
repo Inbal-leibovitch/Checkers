@@ -5,6 +5,7 @@
 #include "game.h"
 #include "actions.h"
 #include "list.h"
+#include "stack.h"
 
 extern int GameMode;
 
@@ -293,7 +294,7 @@ void hint(int x, int y) {
 	printf("hint: %d, %d", x, y);
 }
 void numSolutions() {
-	printf("numsolutions");
+	printf("Number of solutions: %d\n",iterativeBT());
 }
 void autofill() {
 	printf("autofill");
@@ -314,7 +315,7 @@ void exitGame() {
 	printf(EXITING);
 }
 
-freeUndoRedo() {
+void freeUndoRedo() {
 	while (last != head) {
 		Move* temp = last;
 		Change* tempChange = temp->headOfChanges;
@@ -327,7 +328,7 @@ freeUndoRedo() {
 	free(head);
 }
 
-freeBoard() {
+void freeBoard() {
 	int i;
 	for (i = 0; i < board.N; i++) {
 		free(board.gameBoard[i]);
@@ -335,3 +336,5 @@ freeBoard() {
 	free(board.gameBoard);
 
 }
+
+
