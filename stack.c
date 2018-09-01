@@ -71,22 +71,15 @@ int iterativeBT(){
 			current->col++;
 		}
 		else{
-			printf("undo row=%d, col=%d, value=%d\n", current->row,current->col, board.gameBoard[current->row][current->col].tempSol);
 			board.gameBoard[current->row][current->col].tempSol=0;
-			printBoardTempSol();
 		}
 
 		for (i=0; i<board.N; i++){
-			printf("i=%d", i);
 			for ( j=0; j<board.N; j++){
-				printf("j=%d\n", j);
 				if (board.gameBoard[i][j].tempSol==0 && board.gameBoard[i][j].value==0){
 					for (val=current->value+1; val<=board.N; val++){
-						printf("try val=%d\n", val);
 						if (isSafe(i,j, val)){
-							printf("success %d\n", val);
 							board.gameBoard[i][j].tempSol=val;
-							printBoardTempSol();
 							push(i,j,val);
 							current->value=0;
 							break;
