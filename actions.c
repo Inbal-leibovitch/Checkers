@@ -31,7 +31,7 @@ void edit(char* fileName) {
 		return;
 	}
 	GameMode = 2; /*edit mode*/
-	board.markError=1;
+	board.markError = 1;
 	createBoard(fp);
 
 	fclose(fp);
@@ -39,7 +39,7 @@ void edit(char* fileName) {
 
 void editEmpty() {
 	GameMode = 2;
-	board.markError=1;
+	board.markError = 1;
 	createEmptyBoard();
 }
 
@@ -205,7 +205,8 @@ void generate(int x, int y) {
 void printErrorEmptyCells() {
 	printf("error empty cells");
 }
-void undo() {
+/*if print==1 - prints output is provided*/
+void undo(int print) {
 	Change* change;
 	Change* spare;
 	if (current == head) {
@@ -221,22 +222,28 @@ void undo() {
 		board.gameBoard[change->row][change->col].error = change->before.error;
 		change = change->next;
 	}
-	printBoard();
-	while (spare != NULL ) {
-		if (spare->after.value == 0 && spare->before.value == 0) {
-			printf("Undo %d,%d: from _ to _\n", spare->col + 1, spare->row + 1);
 
-		} else if (spare->after.value == 0) {
-			printf("Undo %d,%d: from _ to %d\n", spare->col + 1, spare->row + 1,
-					spare->before.value);
-		} else if (spare->before.value == 0) {
-			printf("Undo %d,%d: from %d to _\n", spare->col + 1, spare->row + 1,
-					spare->after.value);
-		} else {
-			printf("Undo %d,%d: from %d to %d\n", spare->col + 1,
-					spare->row + 1, spare->after.value, spare->before.value);
+	if (print == 1) {
+		printBoard();
+		while (spare != NULL ) {
+			if (spare->after.value == 0 && spare->before.value == 0) {
+				printf("Undo %d,%d: from _ to _\n", spare->col + 1,
+						spare->row + 1);
+
+			} else if (spare->after.value == 0) {
+				printf("Undo %d,%d: from _ to %d\n", spare->col + 1,
+						spare->row + 1, spare->before.value);
+			} else if (spare->before.value == 0) {
+				printf("Undo %d,%d: from %d to _\n", spare->col + 1,
+						spare->row + 1, spare->after.value);
+			} else {
+				printf("Undo %d,%d: from %d to %d\n", spare->col + 1,
+						spare->row + 1, spare->after.value,
+						spare->before.value);
+			}
+			spare = spare->next;
 		}
-		spare = spare->next;
+
 	}
 	current = current->prev;
 }
@@ -292,9 +299,39 @@ void autofill() {
 	printf("autofill");
 }
 void reset() {
-	printf("reset");
+	while (current != head) {
+		undo(0);
+
+	}
+	clearMoves();
+	printf(BOARDRESET);
+	printBoard();
 }
 void exitGame() {
-	printf("exit");
+	freeUndoRedo();
+	freeBoard();
+	/*	freeStack(); **********************************   Free STACK     *******************************/
+	printf(EXITING);
 }
 
+freeUndoRedo() {
+	while (last != head) {
+		Move* temp = last;
+		Change* tempChange = temp->headOfChanges;
+		freeChanges(tempChange);
+		free(temp);
+
+		last = last->prev;
+		last->next = NULL;
+	}
+	free(head);
+}
+
+freeBoard() {
+	int i;
+	for (i = 0; i < board.N; i++) {
+		free(board.gameBoard[i]);
+	}
+	free(board.gameBoard);
+
+}

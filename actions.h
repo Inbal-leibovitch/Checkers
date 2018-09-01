@@ -16,23 +16,17 @@
 #define SUCCESS "Puzzle solved successfully\n"
 #define UNDOERORR "Error: no moves to undo\n"
 #define REDOERORR "Error: no moves to redo\n"
+#define BOARDRESET "Board reset\n"
+#define EXITING "Exiting...\n"
 
 void solve (char* fileName);
-
 void edit(char* fileName);
-
 void editEmpty();
-
 void markErrors(int x);
-
 void printBoard();
-
 void set(int x, int y, int z);
-
 void printErrorNotInRange();
-
 void validate();
-
 void generate(int x, int y);
 void printErrorEmptyCells();
 void undo();
@@ -45,5 +39,6 @@ void reset();
 void exitGame();
 int validateBoard();
 int validValue(int x, int y, int z);
+freeUndoRedo();
 
 #endif /* ACTIONS_H_ */

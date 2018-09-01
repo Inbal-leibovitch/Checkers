@@ -206,7 +206,7 @@ void parse(char str[MAXCommand]) {
 	 */
 	else if (strcmp(token, "undo") == 0) {
 		if (GameMode != 0) {
-			undo();
+			undo(1);
 		} else {
 			printf(INVALIDCOMMAND);
 		}
@@ -300,6 +300,10 @@ void parse(char str[MAXCommand]) {
 	 *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< RESET >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	 */
 	else if (strcmp(token, "reset") == 0) {
+		if (GameMode == 0){
+			printf(INVALIDCOMMAND);
+			return;
+		}
 		reset();
 		return;
 	}
