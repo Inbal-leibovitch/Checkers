@@ -4,6 +4,7 @@
 #include "parser.h"
 #include "game.h"
 #include "actions.h"
+#include "list.h"
 
 extern int GameMode;
 
@@ -30,12 +31,15 @@ void edit(char* fileName) {
 		return;
 	}
 	GameMode = 2; /*edit mode*/
+	board.markError=1;
 	createBoard(fp);
+
 	fclose(fp);
 }
 
 void editEmpty() {
 	GameMode = 2;
+	board.markError=1;
 	createEmptyBoard();
 }
 
@@ -92,46 +96,46 @@ void printBoard() {
 	}
 }
 
-
 /*
  * Set value z to row=x, col=y, if legal.
  * Must be in edit or solve mode before calling this function.
  */
 void set(int x, int y, int z) {
-	/*
-	 * Checks if all three parameters are in the right range
-	 */
+	Cell prevCell;
+	/** Checks if all three parameters are in the right range */
 	if (x <= 0 || x > board.N || y <= 0 || y > board.N || z < 0
 			|| z > board.N) {
 		printErrorNotInRange(board.N);
 		return;
 	}
 	/** if cell if fixed, ignore command*/
-	if (board.gameBoard[y - 1][x - 1].fixed == 1) {
+	if (board.gameBoard[y - 1][x - 1].fixed == 1 && GameMode == 1) {
 		printf(FIXED);
 		return;
 	}
 	/** if value is 0, delete current value in cell*/
+	prevCell.value = board.gameBoard[y - 1][x - 1].value;
+	prevCell.error = board.gameBoard[y - 1][x - 1].error;
+	prevCell.fixed = board.gameBoard[y - 1][x - 1].fixed;
 	if (z == 0) {
 		board.gameBoard[y - 1][x - 1].value = 0;
 		board.gameBoard[y - 1][x - 1].error = 0;
 		board.numBlanks++;
 	} else {
 		/** set the value and mark error if value is wrong */
-
 		if (validValue(x, y, z) == 0) {
 			board.gameBoard[y - 1][x - 1].error = 1;
-		}
-		else {
+		} else {
 			board.gameBoard[y - 1][x - 1].error = 0;
 		}
 		board.gameBoard[y - 1][x - 1].value = z;
+
 		board.numBlanks--;
 	}
-	/**
-	 *TODO: clear any move beyond current move from
-	 * undo\redo list
-	 */
+
+	clearMoves();
+	addMove(x, y, z, prevCell);
+
 	printBoard();
 	/* if game is in solve mode and there are no more blanks cells the board is validated **/
 	if (board.numBlanks == 0) {
@@ -146,7 +150,6 @@ void set(int x, int y, int z) {
 		}
 	}
 }
-
 
 int validateBoard() {
 	return 0;
@@ -168,7 +171,6 @@ int validValue(int x, int y, int z) {
 	/** check col */
 	for (i = 0; i < board.N; i++) {
 		if (board.gameBoard[i][x - 1].value == z) {
-			printf("col");
 			return 0;
 		}
 	}
@@ -178,7 +180,6 @@ int validValue(int x, int y, int z) {
 	for (i = row; i < row + board.row; i++) {
 		for (j = col; j < col + board.col; j++) {
 			if (board.gameBoard[i][j].value == z) {
-				printf("square");
 				return 0;
 			}
 		}
@@ -205,10 +206,78 @@ void printErrorEmptyCells() {
 	printf("error empty cells");
 }
 void undo() {
-	printf("undo");
+	Change* change;
+	Change* spare;
+	if (current == head) {
+		printf(UNDOERORR);
+		return;
+	}
+
+	change = current->headOfChanges;
+	spare = change;
+	while (change != NULL ) {
+		board.gameBoard[change->row][change->col].value = change->before.value;
+		board.gameBoard[change->row][change->col].fixed = change->before.fixed;
+		board.gameBoard[change->row][change->col].error = change->before.error;
+		change = change->next;
+	}
+	printBoard();
+	while (spare != NULL ) {
+		if (spare->after.value == 0 && spare->before.value == 0) {
+			printf("Undo %d,%d: from _ to _\n", spare->col + 1, spare->row + 1);
+
+		} else if (spare->after.value == 0) {
+			printf("Undo %d,%d: from _ to %d\n", spare->col + 1, spare->row + 1,
+					spare->before.value);
+		} else if (spare->before.value == 0) {
+			printf("Undo %d,%d: from %d to _\n", spare->col + 1, spare->row + 1,
+					spare->after.value);
+		} else {
+			printf("Undo %d,%d: from %d to %d\n", spare->col + 1,
+					spare->row + 1, spare->after.value, spare->before.value);
+		}
+		spare = spare->next;
+	}
+	current = current->prev;
 }
+
 void redo() {
-	printf("redo");
+	Change* change;
+	Change* spare;
+	if (current->next == NULL ) { /*no moves to redo*/
+		printf(REDOERORR);
+		return;
+	}
+	current = current->next;
+	change = current->headOfChanges;
+	spare = change;
+
+	while (change != NULL ) {
+		board.gameBoard[change->row][change->col].value = change->after.value;
+		board.gameBoard[change->row][change->col].fixed = change->after.fixed;
+		board.gameBoard[change->row][change->col].error = change->after.error;
+		change = change->next;
+	}
+
+	printBoard();
+	while (spare != NULL ) {
+
+		if (spare->after.value == 0 && spare->before.value == 0) {
+			printf("Redo %d,%d: from _ to _\n", spare->col + 1, spare->row + 1);
+
+		} else if (spare->before.value == 0) {
+			printf("Redo %d,%d: from _ to %d\n", spare->col + 1, spare->row + 1,
+					spare->after.value);
+		} else if (spare->after.value == 0) {
+			printf("Redo %d,%d: from %d to _\n", spare->col + 1, spare->row + 1,
+					spare->before.value);
+		} else {
+			printf("Redo %d,%d: from %d to %d\n", spare->col + 1,
+					spare->row + 1, spare->before.value, spare->after.value);
+		}
+		spare = spare->next;
+	}
+
 }
 void save(char* fileName) {
 	printf("save: %s", fileName);

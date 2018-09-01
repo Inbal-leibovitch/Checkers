@@ -32,4 +32,5 @@ Board board;
 void createBoard(FILE* fp);
 void createEmptyBoard();
 
+
 #endif /* GAME_H_ */

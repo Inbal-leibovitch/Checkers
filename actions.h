@@ -14,6 +14,8 @@
 #define FILEERROR "Error: File doesn't exist or cannot be opened\n"
 #define FIXED "Error: cell is fixed\n"
 #define SUCCESS "Puzzle solved successfully\n"
+#define UNDOERORR "Error: no moves to undo\n"
+#define REDOERORR "Error: no moves to redo\n"
 
 void solve (char* fileName);
 

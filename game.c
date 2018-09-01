@@ -19,9 +19,8 @@ extern int GameMode;
 void createBoard(FILE* fp) {
 	int row = 0, col = 0;
 	int i = 0, j = 0;
-	int c, flag=1; /*flag=0--->whileNumber, flag=1--->whileSpace/. 	*/
+	int c, flag = 1; /*flag=0--->whileNumber, flag=1--->whileSpace/. 	*/
 	int number = 0;
-
 
 	/** row is number of row in small block  row=m , col=n */
 	fscanf(fp, "%d %d", &row, &col);
@@ -29,7 +28,7 @@ void createBoard(FILE* fp) {
 	board.row = row;
 	board.col = col;
 	board.N = row * col;
-	board.numBlanks=board.N;
+	board.numBlanks = board.N;
 	/**allocate memory for boards*/
 	board.gameBoard = calloc(board.N, sizeof(Cell*));
 	if (board.gameBoard == NULL ) {
@@ -43,20 +42,15 @@ void createBoard(FILE* fp) {
 			exit(1);
 		}
 	}
-	i=0;
-	while(i< board.N) {
-		j=0;
-		while ((c = fgetc(fp)))
-		{
-			if (c >= '0' && c <= '9')
-			{
+	i = 0;
+	while (i < board.N) {
+		j = 0;
+		while ((c = fgetc(fp))) {
+			if (c >= '0' && c <= '9') {
 				flag = 0;
 				number = number * 10 + c - '0';
-			}
-			else
-			{
-				if (flag == 0)
-				{
+			} else {
+				if (flag == 0) {
 					board.gameBoard[i][j].value = number;
 					board.gameBoard[i][j].error = 0;
 					board.numBlanks--;
@@ -64,15 +58,17 @@ void createBoard(FILE* fp) {
 					flag = 1;
 					number = 0;
 				}
-				if (c == '.')
-				{
-					board.gameBoard[i][j-1].fixed = 1;
+				if (c == '.') {
+					if (GameMode==2){
+						board.gameBoard[i][j - 1].fixed = 0;
+					}
+					else{
+						board.gameBoard[i][j - 1].fixed = 1;
+					}
 				}
 			}
-			if (c == EOF || c=='\n')
-			{
-				if(j!=0)
-				{
+			if (c == EOF || c == '\n') {
+				if (j != 0) {
 					i++;
 				}
 				break;
@@ -91,7 +87,7 @@ void createEmptyBoard() {
 	board.row = row;
 	board.col = col;
 	board.N = row * col;
-	board.numBlanks = row*col;
+	board.numBlanks = row * col;
 	/**allocate memory for boards*/
 	board.gameBoard = calloc(board.N, sizeof(Cell*));
 	if (board.gameBoard == NULL ) {
@@ -115,4 +111,3 @@ void createEmptyBoard() {
 	}
 	printBoard();
 }
-

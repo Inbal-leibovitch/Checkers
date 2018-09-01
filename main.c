@@ -12,6 +12,8 @@
 #include<time.h>
 #include <stdio.h>
 #include<stdlib.h>
+#include "game.h"
+#include "list.h"
 /*
  * gets command from user and call parse.
  */
@@ -22,6 +24,16 @@ int main(){
 	printf("Sudoku\n------\n");
 	SP_BUFF_SET();
 	srand(time(NULL));
+
+	/*initialize undo/redo doubly linked list*/
+	last = NULL;
+
+
+	head = (Move*) malloc(sizeof(Move));
+	head->next = NULL; /*head->next is the first element in the list*/
+	head->prev = NULL;
+	current = head;
+
 	printf("Enter your command:\n");
 	while(fgets(str, MAXCommand, stdin)!=NULL)
 	{

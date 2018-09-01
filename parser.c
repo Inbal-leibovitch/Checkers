@@ -205,14 +205,23 @@ void parse(char str[MAXCommand]) {
 	 *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< UNDO >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	 */
 	else if (strcmp(token, "undo") == 0) {
-		undo();
+		if (GameMode != 0) {
+			undo();
+		} else {
+			printf(INVALIDCOMMAND);
+		}
 		return;
+
 	}
 	/**
 	 *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< REDO >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	 */
 	else if (strcmp(token, "redo") == 0) {
-		redo();
+		if (GameMode != 0) {
+			redo();
+		} else {
+			printf(INVALIDCOMMAND);
+		}
 		return;
 	}
 	/**
