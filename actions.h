@@ -18,6 +18,9 @@
 #define REDOERORR "Error: no moves to redo\n"
 #define BOARDRESET "Board reset\n"
 #define EXITING "Exiting...\n"
+#define ERRONEOUS "Error: board contains erroneous values\n"
+#define SOLVABLE "Validation passed: board is solvable\n"
+#define UNSOLVABLE "Validation failed: board is unsolvable\n"
 
 void solve (char* fileName);
 void edit(char* fileName);
@@ -37,9 +40,12 @@ void numSolutions();
 void autofill();
 void reset();
 void exitGame();
-int validateBoard();
+int validateFullBoard();
 int validValue(int x, int y, int z);
 void freeUndoRedo();
 void freeBoard();
+void freeStack();
+void unErrorBoard();
+int isErroneous();
 
 #endif /* ACTIONS_H_ */

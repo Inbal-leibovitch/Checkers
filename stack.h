@@ -4,7 +4,7 @@
  *  Created on: 1 בספט 2018
  *      Author: inbal
  */
-
+#include <stdlib.h>
 #ifndef STACK_H_
 #define STACK_H_
 

@@ -157,6 +157,10 @@ void parse(char str[MAXCommand]) {
 	 */
 
 	else if (strcmp(token, "validate") == 0) {
+		if (GameMode==0){
+			printf(INVALIDCOMMAND);
+			return;
+		}
 		validate();
 		return;
 	}
@@ -297,8 +301,13 @@ void parse(char str[MAXCommand]) {
 	 *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< AUTOFILL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	 */
 	else if (strcmp(token, "autofill") == 0) {
+		if (GameMode!=1){
+			printf(INVALIDCOMMAND);
+			return;
+		}
 		autofill();
 		return;
+
 	}
 	/**
 	 *<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< RESET >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

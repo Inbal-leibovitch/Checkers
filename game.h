@@ -16,6 +16,7 @@ typedef struct{
 	int fixed; 	/** fixed is 1 if value is fixed. else- 0*/
 	int error; /** error=1 if cell is erroneous*/
 	int tempSol;
+	int autofill;
 }Cell;
 
 typedef struct{

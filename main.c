@@ -14,6 +14,7 @@
 #include<stdlib.h>
 #include "game.h"
 #include "list.h"
+#include "stack.h"
 /*
  * gets command from user and call parse.
  */
@@ -21,6 +22,7 @@ int GameMode=0;
 
 int main(){
 	char str[256];
+	top = NULL;
 	printf("Sudoku\n------\n");
 	SP_BUFF_SET();
 	srand(time(NULL));

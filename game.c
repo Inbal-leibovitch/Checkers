@@ -21,14 +21,19 @@ void createBoard(FILE* fp) {
 	int i = 0, j = 0;
 	int c, flag = 1; /*flag=0--->whileNumber, flag=1--->whileSpace/. 	*/
 	int number = 0;
-
+	/*if (board!=NULL){
+		freeUndoRedo();
+		freeBoard();
+		freeStack();
+	}*/
 	/** row is number of row in small block  row=m , col=n */
 	fscanf(fp, "%d %d", &row, &col);
 	board.solved = 0;
 	board.row = row;
 	board.col = col;
 	board.N = row * col;
-	board.numBlanks = board.N;
+	board.numBlanks = board.N*board.N;
+	board.markError=1;
 	/**allocate memory for boards*/
 	board.gameBoard = calloc(board.N, sizeof(Cell*));
 	if (board.gameBoard == NULL ) {
@@ -53,7 +58,10 @@ void createBoard(FILE* fp) {
 				if (flag == 0) {
 					board.gameBoard[i][j].value = number;
 					board.gameBoard[i][j].error = 0;
-					board.numBlanks--;
+					board.gameBoard[i][j].autofill =0;
+					if (number!=0){
+						board.numBlanks--;
+					}
 					j++;
 					flag = 1;
 					number = 0;
@@ -82,12 +90,18 @@ void createEmptyBoard() {
 	int row = 3, col = 3;
 	int i, j;
 	/** row is number of row in small block  row=m , col=n */
+	/*if (board!=NULL){
+		freeUndoRedo();
+		freeBoard();
+		freeStack();
+	}*/
 	board.solved = 0;
 
 	board.row = row;
 	board.col = col;
 	board.N = row * col;
-	board.numBlanks = row * col;
+	board.numBlanks = board.N*board.N;
+	board.markError=1;
 	/**allocate memory for boards*/
 	board.gameBoard = calloc(board.N, sizeof(Cell*));
 	if (board.gameBoard == NULL ) {
@@ -107,6 +121,7 @@ void createEmptyBoard() {
 			board.gameBoard[i][j].value = 0;
 			board.gameBoard[i][j].fixed = 0;
 			board.gameBoard[i][j].error = 0;
+			board.gameBoard[i][j].autofill =0;
 		}
 	}
 	printBoard();

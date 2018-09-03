@@ -6,6 +6,7 @@
 #include "actions.h"
 #include "list.h"
 #include "stack.h"
+#include "solver.h"
 
 extern int GameMode;
 
@@ -32,7 +33,7 @@ void edit(char* fileName) {
 		return;
 	}
 	GameMode = 2; /*edit mode*/
-	board.markError = 1;
+	/**board.markError = 1;*/
 	createBoard(fp);
 
 	fclose(fp);
@@ -103,6 +104,8 @@ void printBoard() {
  */
 void set(int x, int y, int z) {
 	Cell prevCell;
+	int prevValue = board.gameBoard[y-1][x-1].value;
+
 	/** Checks if all three parameters are in the right range */
 	if (x <= 0 || x > board.N || y <= 0 || y > board.N || z < 0
 			|| z > board.N) {
@@ -118,10 +121,18 @@ void set(int x, int y, int z) {
 	prevCell.value = board.gameBoard[y - 1][x - 1].value;
 	prevCell.error = board.gameBoard[y - 1][x - 1].error;
 	prevCell.fixed = board.gameBoard[y - 1][x - 1].fixed;
+
+	board.gameBoard[y - 1][x - 1].value=0;
+	board.gameBoard[y - 1][x - 1].error=0;
+
+	unErrorBoard();
+
 	if (z == 0) {
 		board.gameBoard[y - 1][x - 1].value = 0;
 		board.gameBoard[y - 1][x - 1].error = 0;
-		board.numBlanks++;
+		if (prevValue !=0){
+			board.numBlanks++;
+		}
 	} else {
 		/** set the value and mark error if value is wrong */
 		if (validValue(x, y, z) == 0) {
@@ -130,8 +141,9 @@ void set(int x, int y, int z) {
 			board.gameBoard[y - 1][x - 1].error = 0;
 		}
 		board.gameBoard[y - 1][x - 1].value = z;
-
-		board.numBlanks--;
+		if (prevValue==0){
+			board.numBlanks--;
+		}
 	}
 
 	clearMoves();
@@ -141,7 +153,8 @@ void set(int x, int y, int z) {
 	/* if game is in solve mode and there are no more blanks cells the board is validated **/
 	if (board.numBlanks == 0) {
 		if (GameMode == 1) { /**if game is in solve mode - validate board */
-			if (validateBoard() == 0) {
+			printf("here");
+			if (validateFullBoard() == 0) {
 				printf("Puzzle solution erroneous\n");
 			} else {
 				printf(SUCCESS);
@@ -152,27 +165,74 @@ void set(int x, int y, int z) {
 	}
 }
 
-int validateBoard() {
-	return 0;
-}
 /**
- * returns 1 if value is valid, else retuen 0.
+ * return 1 if board is valid
+ */
+int validateFullBoard() {
+
+	int i=0, j=0, tempValue;
+	int valid=0;
+	for (i=0; i<board.N; i++){
+		for (j=0; j<board.N; j++){
+			tempValue = board.gameBoard[i][j].value;
+			if (tempValue!=0){
+				board.gameBoard[i][j].value=0;
+				valid=validValue(j+1,i+1,tempValue);
+				board.gameBoard[i][j].value = tempValue;
+				if (valid ==0){
+					return 0;
+				}
+			}
+		}
+	}
+	return 1;
+}
+
+void unErrorBoard(){
+	int i=0, j=0, value;
+	int valid=0;
+	for (i=0; i<board.N; i++){
+		for (j=0; j<board.N; j++){
+			value = board.gameBoard[i][j].value ;
+			if (value!=0){
+				board.gameBoard[i][j].value=0;
+				valid=validValue(j+1,i+1,value);
+				board.gameBoard[i][j].value = value;
+				if (valid == 1) {
+					board.gameBoard[i][j].error = 0;
+				}
+			}
+		}
+	}
+	return;
+}
+
+/**
+ * returns 1 if value is valid, else return 0.
  * x = col, y=row
+ * autofill if autofill=1
  */
 int validValue(int x, int y, int z) {
 	int i = 0, j = 0;
 	int row = 0, col = 0;
+	int foundConflict =0;
 
 	/** check row */
 	for (i = 0; i < board.N; i++) {
 		if (board.gameBoard[y - 1][i].value == z) {
-			return 0;
+			foundConflict =1;
+			if (board.gameBoard[y - 1][i].fixed==0){
+				board.gameBoard[y - 1][i].error =1;
+			}
 		}
 	}
 	/** check col */
 	for (i = 0; i < board.N; i++) {
 		if (board.gameBoard[i][x - 1].value == z) {
-			return 0;
+			foundConflict =1;
+			if(board.gameBoard[i][x - 1].fixed==0){
+				board.gameBoard[i][x - 1].error =1;
+			}
 		}
 	}
 	/**  check square */
@@ -181,9 +241,15 @@ int validValue(int x, int y, int z) {
 	for (i = row; i < row + board.row; i++) {
 		for (j = col; j < col + board.col; j++) {
 			if (board.gameBoard[i][j].value == z) {
-				return 0;
+				foundConflict =1;
+				if (board.gameBoard[i][j].fixed==0){
+					board.gameBoard[i][j].error =1;
+				}
 			}
 		}
+	}
+	if (foundConflict==1){
+		return 0;
 	}
 	return 1;
 }
@@ -197,7 +263,31 @@ void printErrorNotInRange(int X) {
 }
 
 void validate() {
-	printf("validate");
+	if (isErroneous()==1){
+		printf(ERRONEOUS);
+		return;
+	}
+	if (ILPValidate()==1){
+		printf(SOLVABLE);
+		return;
+	}
+	printf(UNSOLVABLE);
+}
+
+/*
+ * return 1 if board is erroneous
+ */
+int isErroneous(){
+	int i=0, j=0;
+	for (i=0; i<board.N; i++){
+		for (j=0; j<board.N; j++){
+			if (board.gameBoard[i][j].error==1){
+				printf("i=%d,j=%d", i,j);
+				return 1;
+			}
+		}
+	}
+	return 0;
 }
 
 void generate(int x, int y) {
@@ -293,11 +383,53 @@ void save(char* fileName) {
 void hint(int x, int y) {
 	printf("hint: %d, %d", x, y);
 }
+/*
+ * TODO: fix;
+ */
 void numSolutions() {
 	printf("Number of solutions: %d\n",iterativeBT());
 }
+
+/*
+ * TODO: fix autofill more than one
+ */
 void autofill() {
-	printf("autofill");
+	int i=0, j=0, k=0;
+	int value=0;
+	if (isErroneous()==1){
+		printf(ERRONEOUS);
+		return;
+	}
+	for (i=0; i<board.N; i++){
+		for (j=0; j<board.N; j++){
+			if (board.gameBoard[i][j].value==0){
+				for (k=1; k<=board.N; k++){
+					if (validValue(j+1, i+1, k)==1){
+						if (value==0){
+							value = k;
+						}
+						else{
+							value = -1;
+						}
+					}
+				}
+				if (value != -1 && value !=0){
+					board.gameBoard[i][j].autofill=value;
+					printf("Cell <%d,%d> set to %d\n", j+1, i+1, value);
+				}
+			}
+		}
+	}
+	for (i=0; i<board.N; i++){
+		for (j=0; j<board.N; j++){
+			if (board.gameBoard[i][j].value==0 && board.gameBoard[i][j].autofill!=0 ){
+				board.gameBoard[i][j].value=board.gameBoard[i][j].autofill;
+				board.gameBoard[i][j].autofill=0;
+			}
+		}
+	}
+	unErrorBoard();
+	printBoard();
 }
 void reset() {
 	while (current != head) {
@@ -311,7 +443,7 @@ void reset() {
 void exitGame() {
 	freeUndoRedo();
 	freeBoard();
-	/*	freeStack(); **********************************   Free STACK     *******************************/
+	freeStack();
 	printf(EXITING);
 }
 
@@ -325,16 +457,28 @@ void freeUndoRedo() {
 		last = last->prev;
 		last->next = NULL;
 	}
-	free(head);
+	if (head!=NULL){
+		free(head);
+	}
 }
 
 void freeBoard() {
 	int i;
-	for (i = 0; i < board.N; i++) {
-		free(board.gameBoard[i]);
-	}
-	free(board.gameBoard);
+	/*if (board!=NULL){*/
+		for (i = 0; i < board.N; i++) {
+			free(board.gameBoard[i]);
+		}
+		free(board.gameBoard);
+	/*}*/
+}
 
+void freeStack(){
+	Element* temp;
+	while (top!=NULL){
+		temp = top;
+		top = top->prev;
+		free(temp);
+	}
 }
 
 
