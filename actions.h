@@ -21,6 +21,8 @@
 #define ERRONEOUS "Error: board contains erroneous values\n"
 #define SOLVABLE "Validation passed: board is solvable\n"
 #define UNSOLVABLE "Validation failed: board is unsolvable\n"
+#define GOODBOARD "This is a good board!\n"
+#define CONTAINSVALUE "Error: cell already contains a value\n"
 
 void solve (char* fileName);
 void edit(char* fileName);
@@ -44,8 +46,8 @@ int validateFullBoard();
 int validValue(int x, int y, int z);
 void freeUndoRedo();
 void freeBoard();
-void freeStack();
 void unErrorBoard();
 int isErroneous();
+void freeResources();
 
 #endif /* ACTIONS_H_ */

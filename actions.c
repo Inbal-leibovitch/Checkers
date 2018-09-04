@@ -289,10 +289,16 @@ int isErroneous(){
 	}
 	return 0;
 }
-
+/*
+ * TODO: do
+ */
 void generate(int x, int y) {
 	printf("generate: %d, %d", x, y);
 }
+
+/*
+ * TODO: fix
+ */
 void printErrorEmptyCells() {
 	printf("error empty cells");
 }
@@ -377,25 +383,60 @@ void redo() {
 	}
 
 }
+
+/*
+ * TODO : do
+ */
 void save(char* fileName) {
 	printf("save: %s", fileName);
 }
+
 void hint(int x, int y) {
-	printf("hint: %d, %d", x, y);
-}
-/*
- * TODO: fix;
- */
-void numSolutions() {
-	printf("Number of solutions: %d\n",iterativeBT());
+	int solvable=0;
+	if (isErroneous()==1){
+		printf(ERRONEOUS);
+		return;
+	}
+	if (board.gameBoard[y-1][x-1].fixed==1){
+		printf(FIXED);
+		return;
+	}
+	if (board.gameBoard[y-1][x-1].value!=0){
+		printf(CONTAINSVALUE);
+		return;
+	}
+	solvable = ILPValidate();
+	if (solvable !=1){
+		printf(UNSOLVABLE);
+		return;
+	}
+	printf("Hint: set cell to %d\n",board.gameBoard[y-1][x-1].tempSol);
 }
 
-/*
- * TODO: fix autofill more than one
- */
+
+void numSolutions() {
+	int numSolutions;
+	if (isErroneous()==1){
+		printf(ERRONEOUS);
+		return;
+	}
+	/*exhustive backtracking*/
+	numSolutions = iterativeBT();
+	printf("Number of solutions: %d\n",numSolutions);
+	if (numSolutions==1){
+		printf(GOODBOARD);
+	}
+	if (numSolutions>1){
+		printf("The puzzle has more than 1 solution, try to edit it further\n");
+	}
+}
+
 void autofill() {
 	int i=0, j=0, k=0;
 	int value=0;
+	Change* currentChange = NULL;
+	Change* temp = NULL;
+	Move* move = NULL;
 	if (isErroneous()==1){
 		printf(ERRONEOUS);
 		return;
@@ -416,7 +457,9 @@ void autofill() {
 				if (value != -1 && value !=0){
 					board.gameBoard[i][j].autofill=value;
 					printf("Cell <%d,%d> set to %d\n", j+1, i+1, value);
+
 				}
+				value=0;
 			}
 		}
 	}
@@ -425,12 +468,69 @@ void autofill() {
 			if (board.gameBoard[i][j].value==0 && board.gameBoard[i][j].autofill!=0 ){
 				board.gameBoard[i][j].value=board.gameBoard[i][j].autofill;
 				board.gameBoard[i][j].autofill=0;
+				board.numBlanks--;
+				if (move == NULL){
+					move = (Move*)malloc(sizeof(Move));
+					if (move == NULL ) {
+						printf(CALLOC);
+						return;
+					}
+					move->headOfChanges=NULL;
+				}
+				temp=(Change*)malloc(sizeof(Change));
+				if (temp == NULL ) {
+					printf(CALLOC);
+					return;
+				}
+				temp->row = i;
+				temp->col = j;
+
+				temp->before.autofill=0;
+				temp->before.error=0;
+				temp->before.fixed=0;
+				temp->before.tempSol=0;
+				temp->before.value=0;
+
+				temp->after.autofill = 0;
+				temp->after.error = 0;
+				temp->after.fixed = 0;
+				temp->after.tempSol = 0;
+				temp->after.value = board.gameBoard[i][j].value;
+
+				temp->next= NULL;
+
+				if (move->headOfChanges==NULL){
+					move->headOfChanges=temp;
+					currentChange =temp;
+				}
+				else{
+					currentChange->next = temp;
+					currentChange = temp;
+				}
 			}
 		}
 	}
-	unErrorBoard();
+	clearMoves(); /*clear rest of moves list*/
+	if (isEmpty() == 1) {
+		head->next = move;
+		move->prev = head;
+	} else {
+		last->next = move;
+		move->prev = last;
+	}
+	move->next = NULL;
+	current = move;
+	last = current;
+	unErrorBoard(); /*validValue adds unnecessary errors*/
 	printBoard();
+	if (board.numBlanks==0){
+		printf(SUCCESS);
+		GameMode = 0;
+		return;
+	}
 }
+
+
 void reset() {
 	while (current != head) {
 		undo(0);
@@ -441,9 +541,7 @@ void reset() {
 	printBoard();
 }
 void exitGame() {
-	freeUndoRedo();
-	freeBoard();
-	freeStack();
+	freeResources();
 	printf(EXITING);
 }
 
@@ -472,13 +570,13 @@ void freeBoard() {
 	/*}*/
 }
 
-void freeStack(){
-	Element* temp;
-	while (top!=NULL){
-		temp = top;
-		top = top->prev;
-		free(temp);
-	}
+/*
+ * TODO: fix frees
+ * add flag extern
+ */
+void freeResources(){
+	freeUndoRedo();
+	freeBoard();
 }
 
 

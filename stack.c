@@ -98,6 +98,7 @@ int iterativeBT(){
 			}
 		}
 	}
+	freeStack();
 	return numOfSol;
  }
 
@@ -194,4 +195,13 @@ int isStackEmpty(){
 		return 1;
 	}
 	return 0;
+}
+
+void freeStack(){
+	Element* temp;
+	while (top!=NULL){
+		temp = top;
+		top = top->prev;
+		free(temp);
+	}
 }

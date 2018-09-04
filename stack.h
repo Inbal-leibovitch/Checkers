@@ -26,5 +26,6 @@ int findEmptyCell();
 int iterativeBT();
 void copyToTemp();
 int isSafe(int x, int y, int z);
+void freeStack();
 
 #endif /* STACK_H_ */
