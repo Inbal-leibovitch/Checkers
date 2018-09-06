@@ -293,15 +293,170 @@ int isErroneous(){
  * TODO: do
  */
 void generate(int x, int y) {
-	printf("generate: %d, %d", x, y);
+	int i;
+	if (x>board.numBlanks || y>board.numBlanks){
+		printErrorNotInRange(board.numBlanks);
+		return;
+	}
+	if (board.numBlanks!=board.N*board.N){
+		printf("Error: board is not empty\n");
+		return;
+	}
+	clearBoard();
+	for(i=0; i<1000; i++){
+		if (fillXCells(x) == 0) { /*a cell has no legal value*/
+			clearBoard();
+			continue;
+		}
+		if (ILPValidate()==0){ /*board not solvable*/
+			clearBoard();
+			continue;
+		}
+		/*tempSol has solution*/
+		chooseYCells(y);
+		clearTempSol();
+		printBoard();
+		return;
+	}
+	printf("Error: puzzle generator failed\n");
+	return;
+
+}
+
+void randEmptyCell(int* i, int* j){
+	do {
+		*i = rand() % board.N;
+		*j = rand() % board.N;
+	}
+	while (board.gameBoard[*i][*j].value!=0);
 }
 
 /*
- * TODO: fix
+ * return 1 if all cell were filled
+ * 0 if a cell has no legal value available
  */
-void printErrorEmptyCells() {
-	printf("error empty cells");
+int fillXCells(int x){
+	int i = 0, j = 0, numOfOptions = 0, chosen = 0, index = 0, k=0;
+	int num;
+	int* options;
+
+	for (k=0; k<x; k++){
+		randEmptyCell(&i, &j);
+
+		/**options is an array the size of board.N. if cell i is 1 then i is a valid option.*/
+		options = calloc(board.N, sizeof(int));
+		for (num = 1; num <= board.N; num++) {
+			if (validValue( j + 1, i + 1, num) == 1) {
+				options[num - 1]++;
+				numOfOptions++;
+			}
+		}
+		if (numOfOptions==0){
+			return 0; /*cell has no legal value*/
+		}
+		chosen = rand() % (numOfOptions);
+		num=0;
+		for (index = 0; index < board.N; index++) {
+			if (options[index] == 1) {
+				num++;
+			}
+			if (num == chosen + 1) {
+				break;
+			}
+		}
+		board.gameBoard[i][j].value = index+1;
+		free(options);
+	}
+	return 1;
 }
+
+/*
+ * clears all value fields to 0
+ */
+void clearBoard(){
+	int i=0, j=0;
+	for (i=0; i<board.N; i++){
+		for (j=0; j<board.N; j++){
+			board.gameBoard[i][j].value = 0;
+			board.gameBoard[i][j].tempSol = 0;
+		}
+	}
+}
+
+void chooseYCells(int y)
+{
+	int k=0, i=0, j=0;
+	Change* currentChange = NULL;
+	Change* temp = NULL;
+	Move* move = NULL;
+	clearValue();
+	if (y==0){
+		return;
+	}
+	for (k=0; k<y; k++){
+		randEmptyCell(&i,&j);
+		board.gameBoard[i][j].value=board.gameBoard[i][j].tempSol;
+		board.numBlanks--;
+		if (move == NULL ) {
+			move = (Move*) malloc(sizeof(Move));
+			if (move == NULL ) {
+				printf(CALLOC);
+				return;
+			}
+			move->headOfChanges = NULL;
+		}
+		temp = (Change*) malloc(sizeof(Change));
+		if (temp == NULL ) {
+			printf(CALLOC);
+			return;
+		}
+		temp->row = i;
+		temp->col = j;
+
+		temp->before.autofill = 0;
+		temp->before.error = 0;
+		temp->before.fixed = 0;
+		temp->before.tempSol = 0;
+		temp->before.value = 0;
+
+		temp->after.autofill = 0;
+		temp->after.error = 0;
+		temp->after.fixed = 0;
+		temp->after.tempSol = 0;
+		temp->after.value = board.gameBoard[i][j].value;
+
+		temp->next = NULL;
+
+		if (move->headOfChanges == NULL ) {
+			move->headOfChanges = temp;
+			currentChange = temp;
+		} else {
+			currentChange->next = temp;
+			currentChange = temp;
+		}
+	}
+
+}
+void clearValue(){
+	int i = 0, j = 0;
+	for (i = 0; i < board.N; i++) {
+		for (j = 0; j < board.N; j++) {
+			board.gameBoard[i][j].value = 0;
+		}
+	}
+}
+
+void clearTempSol() {
+	int i = 0, j = 0;
+	for (i = 0; i < board.N; i++) {
+		for (j = 0; j < board.N; j++) {
+			board.gameBoard[i][j].tempSol = 0;
+		}
+	}
+}
+
+
+
 /*if print==1 - prints output is provided*/
 void undo(int print) {
 	Change* change;
@@ -384,11 +539,51 @@ void redo() {
 
 }
 
-/*
- * TODO : do
- */
 void save(char* fileName) {
-	printf("save: %s", fileName);
+	FILE* fp = NULL;
+
+	if (GameMode == 2){
+		if (isErroneous()==1){
+			printf(ERRONEOUS);
+			return;
+		}
+		if (ILPValidate()==0){
+			printf(VALIDATIONFAILED);
+			return;
+		}
+	}
+	fp = fopen(fileName, "w");
+	if (fp == NULL ) {
+		printf("Error: File cannot be created or modified\n");
+		return;
+	}
+	saveTofile(fp);
+	printf("Saved to: %s\n",fileName);
+	return;
+}
+
+void saveTofile(FILE* fp){
+	int i=0, j=0;
+	fputc(board.row, fp);
+	fputc(' ', fp);
+	fputc(board.col, fp);
+	fputc('\n', fp);
+	for (i=0; i<board.N; i++){
+		for (j=0; j<board.N; j++){
+			fputc(board.gameBoard[i][j].value, fp);
+			if (board.gameBoard[i][j].fixed==1 || GameMode==2){
+				fputc('.',fp);
+			}
+			if (board.gameBoard[i][j].error==1){
+				fputc('*', fp);
+			}
+			fputc(' ', fp);
+		}
+		if (i!=board.N-1){
+			fputc('\n',fp);
+		}
+	}
+	fclose(fp);
 }
 
 void hint(int x, int y) {

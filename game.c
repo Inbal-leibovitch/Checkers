@@ -59,6 +59,7 @@ void createBoard(FILE* fp) {
 					board.gameBoard[i][j].value = number;
 					board.gameBoard[i][j].error = 0;
 					board.gameBoard[i][j].autofill =0;
+					board.gameBoard[i][j].tempSol=0;
 					if (number!=0){
 						board.numBlanks--;
 					}
@@ -122,6 +123,7 @@ void createEmptyBoard() {
 			board.gameBoard[i][j].fixed = 0;
 			board.gameBoard[i][j].error = 0;
 			board.gameBoard[i][j].autofill =0;
+			board.gameBoard[i][j].tempSol=0;
 		}
 	}
 	printBoard();

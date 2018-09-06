@@ -23,6 +23,7 @@
 #define UNSOLVABLE "Validation failed: board is unsolvable\n"
 #define GOODBOARD "This is a good board!\n"
 #define CONTAINSVALUE "Error: cell already contains a value\n"
+#define VALIDATIONFAILED "Error: board validation failed\n"
 
 void solve (char* fileName);
 void edit(char* fileName);
@@ -49,5 +50,12 @@ void freeBoard();
 void unErrorBoard();
 int isErroneous();
 void freeResources();
+void saveTofile(FILE* fp);
+int fillXCells(int x);
+void clearBoard();
+void chooseYCells(int y);
+void randEmptyCell(int* i, int* j);
+void clearValue();
+void clearTempSol();
 
 #endif /* ACTIONS_H_ */

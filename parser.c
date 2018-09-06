@@ -11,6 +11,7 @@
 #include<stdlib.h>
 #include "parser.h"
 #include "actions.h"
+#include "game.h"
 
 extern int GameMode;
 /**
@@ -176,11 +177,7 @@ void parse(char str[MAXCommand]) {
 		if (token != NULL ) {
 			x = strtol(token, &end, 10);
 			if (end == token) {
-				printErrorEmptyCells();
-				/**
-				 * 7e in generate, page 7
-				 **/
-
+				printErrorNotInRange(board.numBlanks);
 				return;
 			}
 		} else {
@@ -191,11 +188,7 @@ void parse(char str[MAXCommand]) {
 		if (token != NULL ) {
 			y = strtol(token, &end, 10);
 			if (end == token) {
-				printErrorEmptyCells();
-				/**
-				 * 7e in generate, page 7
-				 **/
-
+				printErrorNotInRange(board.numBlanks);
 				return;
 			}
 		} else {
