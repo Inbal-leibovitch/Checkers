@@ -19,6 +19,7 @@
  * gets command from user and call parse.
  */
 int GameMode=0;
+int BoardAllocated=0;
 
 int main(){
 	char str[256];

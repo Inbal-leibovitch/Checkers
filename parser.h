@@ -9,7 +9,7 @@
 #define PARSER_H_
 
 #define MAXCommand 256
-#define INVALIDCOMMAND "Error: invalid command\n"
+#define INVALIDCOMMAND "ERROR: invalid command\n"
 #define MARKERROR "Error: the value should be 0 or 1\n"
 
 

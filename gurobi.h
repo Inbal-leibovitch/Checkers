@@ -8,7 +8,9 @@
 #ifndef GUROBI_H_
 #define GUROBI_H_
 
-#define GUROBIERROR "Error: gurobi error"
+#define GUROBIERROR "Error: gurobi error\n"
+
+int gurobi();
 
 
 #endif /* GUROBI_H_ */

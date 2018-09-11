@@ -3,6 +3,8 @@
 #include <string.h>
 #include "gurobi_c.h"
 #include "gurobi.h"
+#include "game.h"
+#include "actions.h"
 
 int gurobi() {
 	int N = board.N;
@@ -11,18 +13,45 @@ int gurobi() {
 	GRBenv *env = NULL;
 	GRBmodel *model = NULL;
 
-	int ind[N];
-	double val[N];
+	int* ind;
+	double* val;
+	double *lb;
+	char* vtype;
+	double* sol;
 
-	double lb[N * N * N];
-	char vtype[N * N * N];
-	double sol[N * N * N];
-
-	char *cursor;
 	int optimstatus;
 	double objval;
 	int i, j, v, x, y, count;
 	int error = 0;
+
+	ind = (int*)malloc(N*sizeof(int));
+	if (ind==NULL){
+		printf(CALLOC);
+		return 0;
+	}
+
+	val = (double*)malloc(N*sizeof(double));
+	if(val == NULL){
+		printf(CALLOC);
+		return 0;
+	}
+
+	lb = (double*)malloc((N*N*N)*sizeof(double));
+	if(lb == NULL){
+		printf(CALLOC);
+		return 0;
+	}
+	vtype = (char*)malloc((N*N*N)*sizeof(char));
+	if(vtype == NULL){
+		printf(CALLOC);
+		return 0;
+	}
+	sol = (double*)malloc((N*N*N)*sizeof(double));
+	if(sol == NULL){
+		printf(CALLOC);
+		return 0;
+	}
+
 
 	/* Create environment */
 
@@ -33,6 +62,11 @@ int gurobi() {
 		GRBfreemodel(model);
 		/* Free environment */
 		GRBfreeenv(env);
+		free(ind);
+		free(val);
+		free(lb);
+		free(vtype);
+		free(sol);
 		return 0;
 	}
 
@@ -60,6 +94,11 @@ int gurobi() {
 		GRBfreemodel(model);
 		/* Free environment */
 		GRBfreeenv(env);
+		free(ind);
+		free(val);
+		free(lb);
+		free(vtype);
+		free(sol);
 		return 0;
 	}
 
@@ -79,6 +118,11 @@ int gurobi() {
 				GRBfreemodel(model);
 				/* Free environment */
 				GRBfreeenv(env);
+				free(ind);
+				free(val);
+				free(lb);
+				free(vtype);
+				free(sol);
 				return 0;
 			}
 		}
@@ -100,6 +144,11 @@ int gurobi() {
 				GRBfreemodel(model);
 				/* Free environment */
 				GRBfreeenv(env);
+				free(ind);
+				free(val);
+				free(lb);
+				free(vtype);
+				free(sol);
 				return 0;
 			}
 		}
@@ -121,6 +170,11 @@ int gurobi() {
 				GRBfreemodel(model);
 				/* Free environment */
 				GRBfreeenv(env);
+				free(ind);
+				free(val);
+				free(lb);
+				free(vtype);
+				free(sol);
 				return 0;
 			}
 		}
@@ -134,7 +188,7 @@ int gurobi() {
 				count = 0;
 				for (i = x * col; i < (x + 1) * col; i++) {
 					for (j = y * row; j < (y + 1) * row; j++) {
-						ind[count] = i * N * N + j * N + v;
+						ind[count] = j * N * N + i * N + v;
 						val[count] = 1.0;
 						count++;
 					}
@@ -147,6 +201,11 @@ int gurobi() {
 					GRBfreemodel(model);
 					/* Free environment */
 					GRBfreeenv(env);
+					free(ind);
+					free(val);
+					free(lb);
+					free(vtype);
+					free(sol);
 					return 0;
 				}
 			}
@@ -162,6 +221,11 @@ int gurobi() {
 		GRBfreemodel(model);
 		/* Free environment */
 		GRBfreeenv(env);
+		free(ind);
+		free(val);
+		free(lb);
+		free(vtype);
+		free(sol);
 		return 0;
 	}
 
@@ -174,6 +238,11 @@ int gurobi() {
 		GRBfreemodel(model);
 		/* Free environment */
 		GRBfreeenv(env);
+		free(ind);
+		free(val);
+		free(lb);
+		free(vtype);
+		free(sol);
 		return 0;
 	}
 
@@ -185,6 +254,11 @@ int gurobi() {
 		GRBfreemodel(model);
 		/* Free environment */
 		GRBfreeenv(env);
+		free(ind);
+		free(val);
+		free(lb);
+		free(vtype);
+		free(sol);
 		return 0;
 	}
 	/*get objective from the function*/
@@ -195,6 +269,11 @@ int gurobi() {
 		GRBfreemodel(model);
 		/* Free environment */
 		GRBfreeenv(env);
+		free(ind);
+		free(val);
+		free(lb);
+		free(vtype);
+		free(sol);
 		return 0;
 	}
 
@@ -206,6 +285,11 @@ int gurobi() {
 		GRBfreemodel(model);
 		/* Free environment */
 		GRBfreeenv(env);
+		free(ind);
+		free(val);
+		free(lb);
+		free(vtype);
+		free(sol);
 		return 0;
 	}
 
@@ -214,7 +298,7 @@ int gurobi() {
 		for (j=0; j<N; j++){
 			for (v=0; v<N; v++){
 				if (sol[i*N*N+j*N+v]==1){
-					board.gameBoard[i][j].value = v+1;
+					board.gameBoard[i][j].tempSol = v+1;
 				}
 			}
 		}
@@ -235,6 +319,11 @@ int gurobi() {
 	GRBfreemodel(model);
 	/* Free environment */
 	GRBfreeenv(env);
+	free(ind);
+	free(val);
+	free(lb);
+	free(vtype);
+	free(sol);
 	return 1;
 }
 

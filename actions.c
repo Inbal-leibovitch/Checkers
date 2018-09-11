@@ -9,6 +9,7 @@
 #include "solver.h"
 
 extern int GameMode;
+extern int BoardAllocated;
 
 void solve(char* fileName) {
 	FILE* fp = NULL;
@@ -53,7 +54,6 @@ void markErrors(int x) {
 		return;
 	}
 	board.markError = x;
-
 }
 
 void printBoard() {
@@ -202,6 +202,31 @@ void unErrorBoard(){
 					board.gameBoard[i][j].error = 0;
 				}
 			}
+			else{
+				board.gameBoard[i][j].error=0;
+			}
+		}
+	}
+	return;
+}
+
+void CheckForErrors(){
+	int i=0, j=0, value;
+	int valid=0;
+	for (i=0; i<board.N; i++){
+		for (j=0; j<board.N; j++){
+			value = board.gameBoard[i][j].value ;
+			if (value!=0){
+				board.gameBoard[i][j].value=0;
+				valid=validValue(j+1,i+1,value);
+				board.gameBoard[i][j].value = value;
+				if (valid == 0) {
+					board.gameBoard[i][j].error = 1;
+				}
+			}
+			else{
+				board.gameBoard[i][j].error=0;
+			}
 		}
 	}
 	return;
@@ -282,16 +307,13 @@ int isErroneous(){
 	for (i=0; i<board.N; i++){
 		for (j=0; j<board.N; j++){
 			if (board.gameBoard[i][j].error==1){
-				printf("i=%d,j=%d", i,j);
 				return 1;
 			}
 		}
 	}
 	return 0;
 }
-/*
- * TODO: do
- */
+
 void generate(int x, int y) {
 	int i;
 	if (x>board.numBlanks || y>board.numBlanks){
@@ -315,12 +337,12 @@ void generate(int x, int y) {
 		/*tempSol has solution*/
 		chooseYCells(y);
 		clearTempSol();
+		unErrorBoard(); /*validValue adds unnecessary errors*/
 		printBoard();
 		return;
 	}
 	printf("Error: puzzle generator failed\n");
 	return;
-
 }
 
 void randEmptyCell(int* i, int* j){
@@ -474,7 +496,7 @@ void undo(int print) {
 		board.gameBoard[change->row][change->col].error = change->before.error;
 		change = change->next;
 	}
-
+	unErrorBoard();
 	if (print == 1) {
 		printBoard();
 		while (spare != NULL ) {
@@ -485,9 +507,11 @@ void undo(int print) {
 			} else if (spare->after.value == 0) {
 				printf("Undo %d,%d: from _ to %d\n", spare->col + 1,
 						spare->row + 1, spare->before.value);
+				board.numBlanks--;
 			} else if (spare->before.value == 0) {
 				printf("Undo %d,%d: from %d to _\n", spare->col + 1,
 						spare->row + 1, spare->after.value);
+				board.numBlanks++;
 			} else {
 				printf("Undo %d,%d: from %d to %d\n", spare->col + 1,
 						spare->row + 1, spare->after.value,
@@ -517,7 +541,7 @@ void redo() {
 		board.gameBoard[change->row][change->col].error = change->after.error;
 		change = change->next;
 	}
-
+	CheckForErrors();
 	printBoard();
 	while (spare != NULL ) {
 
@@ -527,9 +551,11 @@ void redo() {
 		} else if (spare->before.value == 0) {
 			printf("Redo %d,%d: from _ to %d\n", spare->col + 1, spare->row + 1,
 					spare->after.value);
+			board.numBlanks--;
 		} else if (spare->after.value == 0) {
 			printf("Redo %d,%d: from %d to _\n", spare->col + 1, spare->row + 1,
 					spare->before.value);
+			board.numBlanks++;
 		} else {
 			printf("Redo %d,%d: from %d to %d\n", spare->col + 1,
 					spare->row + 1, spare->before.value, spare->after.value);
@@ -564,14 +590,14 @@ void save(char* fileName) {
 
 void saveTofile(FILE* fp){
 	int i=0, j=0;
-	fputc(board.row, fp);
+	fputc(board.row+'0', fp);
 	fputc(' ', fp);
-	fputc(board.col, fp);
+	fputc(board.col+'0', fp);
 	fputc('\n', fp);
 	for (i=0; i<board.N; i++){
 		for (j=0; j<board.N; j++){
-			fputc(board.gameBoard[i][j].value, fp);
-			if (board.gameBoard[i][j].fixed==1 || GameMode==2){
+			fputc(board.gameBoard[i][j].value+'0', fp);
+			if (board.gameBoard[i][j].fixed==1 || (GameMode==2&&board.gameBoard[i][j].value!=0)){
 				fputc('.',fp);
 			}
 			if (board.gameBoard[i][j].error==1){
@@ -632,6 +658,7 @@ void autofill() {
 	Change* currentChange = NULL;
 	Change* temp = NULL;
 	Move* move = NULL;
+	clearAutofill();
 	if (isErroneous()==1){
 		printf(ERRONEOUS);
 		return;
@@ -671,6 +698,8 @@ void autofill() {
 						return;
 					}
 					move->headOfChanges=NULL;
+					move->prev=NULL;
+					move->next=NULL;
 				}
 				temp=(Change*)malloc(sizeof(Change));
 				if (temp == NULL ) {
@@ -705,19 +734,22 @@ void autofill() {
 			}
 		}
 	}
-	clearMoves(); /*clear rest of moves list*/
-	if (isEmpty() == 1) {
-		head->next = move;
-		move->prev = head;
-	} else {
-		last->next = move;
-		move->prev = last;
+	if (move != NULL ) {
+		clearMoves(); /*clear rest of moves list*/
+		if (isEmpty() == 1) {
+			head->next = move;
+			move->prev = head;
+		} else {
+			last->next = move;
+			move->prev = last;
+		}
+		move->next = NULL;
+		current = move;
+		last = current;
 	}
-	move->next = NULL;
-	current = move;
-	last = current;
-	unErrorBoard(); /*validValue adds unnecessary errors*/
-	printBoard();
+
+		unErrorBoard(); /*validValue adds unnecessary errors*/
+		printBoard();
 	if (board.numBlanks==0){
 		printf(SUCCESS);
 		GameMode = 0;
@@ -725,6 +757,14 @@ void autofill() {
 	}
 }
 
+void clearAutofill(){
+	int i=0, j=0;
+	for (i=0; i<board.N; i++){
+		for (j=0; j<board.N; j++){
+			board.gameBoard[i][j].autofill=0;
+		}
+	}
+}
 
 void reset() {
 	while (current != head) {
@@ -738,6 +778,7 @@ void reset() {
 void exitGame() {
 	freeResources();
 	printf(EXITING);
+	exit(0);
 }
 
 void freeUndoRedo() {
@@ -757,18 +798,14 @@ void freeUndoRedo() {
 
 void freeBoard() {
 	int i;
-	/*if (board!=NULL){*/
+	if (BoardAllocated==1){
 		for (i = 0; i < board.N; i++) {
 			free(board.gameBoard[i]);
 		}
 		free(board.gameBoard);
-	/*}*/
+	}
 }
 
-/*
- * TODO: fix frees
- * add flag extern
- */
 void freeResources(){
 	freeUndoRedo();
 	freeBoard();

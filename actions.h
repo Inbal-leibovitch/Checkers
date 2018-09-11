@@ -57,5 +57,7 @@ void chooseYCells(int y);
 void randEmptyCell(int* i, int* j);
 void clearValue();
 void clearTempSol();
+void clearAutofill();
+void CheckForErrors();
 
 #endif /* ACTIONS_H_ */

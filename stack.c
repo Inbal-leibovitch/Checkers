@@ -57,7 +57,9 @@ void printBoardTempSol() {
 int iterativeBT(){
 	Element* current = NULL;
 	int i=0, j=0, val=0, numOfSol=0;
+	int flagBreak =0;
  	copyToTemp();
+ 	printBoardTempSol();
 	push(-1,-1,0);
 	while (isStackEmpty()==0){
 		if (findEmptyCell()==0){
@@ -69,31 +71,37 @@ int iterativeBT(){
 			current->col++;
 		}
 		else{
+			/*printf("undo row=%d, col=%d, value=%d\n", current->row, current->col, board.gameBoard[current->row][current->col].tempSol);*/
 			board.gameBoard[current->row][current->col].tempSol=0;
 
 		}
  		for (i=0; i<board.N; i++){
-
+ 			/*printf("i=%d", i);*/
 			for ( j=0; j<board.N; j++){
-
+				/*printf("j=%d\n" ,j);*/
 				if (board.gameBoard[i][j].tempSol==0 && board.gameBoard[i][j].value==0){
 					for (val=current->value+1; val<=board.N; val++){
-
+						/*printf("try val=%d\n",val);*/
 						if (isSafe(i,j, val)){
-
+							/*printf("success=%d\n",val);*/
 							board.gameBoard[i][j].tempSol=val;
-
+							/*printBoardTempSol();*/
 							push(i,j,val);
 							current->value=0;
+							/*printf("break1");*/
 							break;
 						}
 					}
 					if (board.gameBoard[i][j].tempSol==0){
+						flagBreak=1;
+						/*printf("break2 i=%d, j=%d", i, j);*/
 						break;
 					}
  				}
  			}
-			if (board.gameBoard[i][j].tempSol==0){
+			if (flagBreak==1){
+				flagBreak=0;
+				/*printf("break3 i=%d, j=%d", i, j);*/
 				break;
 			}
 		}

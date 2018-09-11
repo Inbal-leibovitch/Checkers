@@ -8,8 +8,10 @@
 #include "actions.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "list.h"
 
 extern int GameMode;
+extern int BoardAllocated;
 /*
  * asks user for number of cells to fill until a valild number is given.
  * allocates memory for puzzle and solution boards.
@@ -21,13 +23,16 @@ void createBoard(FILE* fp) {
 	int i = 0, j = 0;
 	int c, flag = 1; /*flag=0--->whileNumber, flag=1--->whileSpace/. 	*/
 	int number = 0;
-	/*if (board!=NULL){
-		freeUndoRedo();
-		freeBoard();
-		freeStack();
-	}*/
 	/** row is number of row in small block  row=m , col=n */
 	fscanf(fp, "%d %d", &row, &col);
+	if (BoardAllocated == 1) {
+		while (current != head) {
+			undo(0);
+
+		}
+		clearMoves();
+		freeBoard();
+	}
 	board.solved = 0;
 	board.row = row;
 	board.col = col;
@@ -35,6 +40,7 @@ void createBoard(FILE* fp) {
 	board.numBlanks = board.N*board.N;
 	board.markError=1;
 	/**allocate memory for boards*/
+
 	board.gameBoard = calloc(board.N, sizeof(Cell*));
 	if (board.gameBoard == NULL ) {
 		printf(CALLOC);
@@ -84,6 +90,7 @@ void createBoard(FILE* fp) {
 			}
 		}
 	}
+	BoardAllocated=1;
 	printBoard();
 }
 
@@ -96,6 +103,14 @@ void createEmptyBoard() {
 		freeBoard();
 		freeStack();
 	}*/
+	if (BoardAllocated == 1) {
+		while (current != head) {
+			undo(0);
+
+		}
+		clearMoves();
+		freeBoard();
+	}
 	board.solved = 0;
 
 	board.row = row;
@@ -104,6 +119,7 @@ void createEmptyBoard() {
 	board.numBlanks = board.N*board.N;
 	board.markError=1;
 	/**allocate memory for boards*/
+
 	board.gameBoard = calloc(board.N, sizeof(Cell*));
 	if (board.gameBoard == NULL ) {
 		printf(CALLOC);
@@ -126,5 +142,6 @@ void createEmptyBoard() {
 			board.gameBoard[i][j].tempSol=0;
 		}
 	}
+	BoardAllocated=1;
 	printBoard();
 }
