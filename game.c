@@ -28,7 +28,6 @@ void createBoard(FILE* fp) {
 	if (BoardAllocated == 1) {
 		while (current != head) {
 			undo(0);
-
 		}
 		clearMoves();
 		freeBoard();
@@ -38,7 +37,9 @@ void createBoard(FILE* fp) {
 	board.col = col;
 	board.N = row * col;
 	board.numBlanks = board.N*board.N;
-	board.markError=1;
+	if (BoardAllocated == 0){
+		board.markError=1;
+	}
 	/**allocate memory for boards*/
 
 	board.gameBoard = calloc(board.N, sizeof(Cell*));
@@ -81,6 +82,9 @@ void createBoard(FILE* fp) {
 						board.gameBoard[i][j - 1].fixed = 1;
 					}
 				}
+				if (c== '*'){
+					board.gameBoard[i][j-1].error =1;
+				}
 			}
 			if (c == EOF || c == '\n') {
 				if (j != 0) {
@@ -98,26 +102,21 @@ void createEmptyBoard() {
 	int row = 3, col = 3;
 	int i, j;
 	/** row is number of row in small block  row=m , col=n */
-	/*if (board!=NULL){
-		freeUndoRedo();
-		freeBoard();
-		freeStack();
-	}*/
 	if (BoardAllocated == 1) {
 		while (current != head) {
 			undo(0);
-
 		}
 		clearMoves();
 		freeBoard();
 	}
 	board.solved = 0;
-
 	board.row = row;
 	board.col = col;
 	board.N = row * col;
 	board.numBlanks = board.N*board.N;
-	board.markError=1;
+	if (BoardAllocated==0){
+		board.markError=1;
+	}
 	/**allocate memory for boards*/
 
 	board.gameBoard = calloc(board.N, sizeof(Cell*));

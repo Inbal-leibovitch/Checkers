@@ -29,13 +29,15 @@ int main(){
 	srand(time(NULL));
 
 	/*initialize undo/redo doubly linked list*/
-	last = NULL;
+
 
 
 	head = (Move*) malloc(sizeof(Move));
 	head->next = NULL; /*head->next is the first element in the list*/
 	head->prev = NULL;
+	head->headOfChanges = NULL;
 	current = head;
+	last = head;
 
 	printf("Enter your command:\n");
 	while(fgets(str, MAXCommand, stdin)!=NULL)

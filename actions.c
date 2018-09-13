@@ -6,14 +6,16 @@
 #include "actions.h"
 #include "list.h"
 #include "stack.h"
-#include "solver.h"
+#include "gurobi.h"
 
 extern int GameMode;
 extern int BoardAllocated;
 
 void solve(char* fileName) {
+
 	FILE* fp = NULL;
 	fp = fopen(fileName, "r");
+	printf("mark_errors is %d", board.markError);
 	if (fp == NULL ) {
 		printf(FILEERROR);
 		return;
@@ -24,8 +26,10 @@ void solve(char* fileName) {
 }
 
 void edit(char* fileName) {
+
 	FILE* fp = NULL;
 	fp = fopen(fileName, "r");
+	printf("mark_errors is %d", board.markError);
 	if (fp == NULL ) {
 		printf("Error: File cannot be opened\n");
 		/*
@@ -42,7 +46,7 @@ void edit(char* fileName) {
 
 void editEmpty() {
 	GameMode = 2;
-	board.markError = 1;
+	/*board.markError = 1;*/
 	createEmptyBoard();
 }
 
@@ -104,19 +108,21 @@ void printBoard() {
  */
 void set(int x, int y, int z) {
 	Cell prevCell;
-	int prevValue = board.gameBoard[y-1][x-1].value;
-
+	int prevValue;
+	printf("y=%d\n", y);
 	/** Checks if all three parameters are in the right range */
 	if (x <= 0 || x > board.N || y <= 0 || y > board.N || z < 0
 			|| z > board.N) {
 		printErrorNotInRange(board.N);
 		return;
 	}
+
 	/** if cell if fixed, ignore command*/
 	if (board.gameBoard[y - 1][x - 1].fixed == 1 && GameMode == 1) {
 		printf(FIXED);
 		return;
 	}
+	prevValue = board.gameBoard[y-1][x-1].value;
 	/** if value is 0, delete current value in cell*/
 	prevCell.value = board.gameBoard[y - 1][x - 1].value;
 	prevCell.error = board.gameBoard[y - 1][x - 1].error;
@@ -288,11 +294,13 @@ void printErrorNotInRange(int X) {
 }
 
 void validate() {
+
 	if (isErroneous()==1){
 		printf(ERRONEOUS);
 		return;
 	}
-	if (ILPValidate()==1){
+	clearTempSol();
+	if (ILPSolver()==1){
 		printf(SOLVABLE);
 		return;
 	}
@@ -330,7 +338,7 @@ void generate(int x, int y) {
 			clearBoard();
 			continue;
 		}
-		if (ILPValidate()==0){ /*board not solvable*/
+		if (ILPSolver()==0){ /*board not solvable*/
 			clearBoard();
 			continue;
 		}
@@ -458,6 +466,19 @@ void chooseYCells(int y)
 		}
 	}
 
+	if (move != NULL ) {
+		clearMoves(); /*clear rest of moves list*/
+		if (isEmpty() == 1) {
+			head->next = move;
+			move->prev = head;
+		} else {
+			last->next = move;
+			move->prev = last;
+		}
+		move->next = NULL;
+		current = move;
+		last = current;
+	}
 }
 void clearValue(){
 	int i = 0, j = 0;
@@ -573,7 +594,8 @@ void save(char* fileName) {
 			printf(ERRONEOUS);
 			return;
 		}
-		if (ILPValidate()==0){
+		clearTempSol();
+		if (ILPSolver()==0){
 			printf(VALIDATIONFAILED);
 			return;
 		}
@@ -626,7 +648,8 @@ void hint(int x, int y) {
 		printf(CONTAINSVALUE);
 		return;
 	}
-	solvable = ILPValidate();
+	clearTempSol();
+	solvable = ILPSolver();
 	if (solvable !=1){
 		printf(UNSOLVABLE);
 		return;
@@ -785,11 +808,12 @@ void freeUndoRedo() {
 	while (last != head) {
 		Move* temp = last;
 		Change* tempChange = temp->headOfChanges;
+		printf("before free changes");
 		freeChanges(tempChange);
-		free(temp);
-
+		printf("after free changes");
 		last = last->prev;
 		last->next = NULL;
+		free(temp);
 	}
 	if (head!=NULL){
 		free(head);
@@ -801,8 +825,10 @@ void freeBoard() {
 	if (BoardAllocated==1){
 		for (i = 0; i < board.N; i++) {
 			free(board.gameBoard[i]);
+			printf("free %d row\n",i);
 		}
 		free(board.gameBoard);
+		printf("free board\n");
 	}
 }
 

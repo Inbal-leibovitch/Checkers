@@ -6,7 +6,11 @@
 #include "game.h"
 #include "actions.h"
 
-int gurobi() {
+/*
+ * return 1 if board is solvable
+ * and put solution in tempSol
+ */
+int ILPSolver() {
 	int N = board.N;
 	int row = board.row;
 	int col = board.col;
@@ -326,4 +330,6 @@ int gurobi() {
 	free(sol);
 	return 1;
 }
-
+/*
+ * TODO: check hint and generate and validate
+ */

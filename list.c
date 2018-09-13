@@ -16,10 +16,11 @@ void clearMoves() {
 		Move* temp = last;
 		Change* tempChange = temp->headOfChanges;
 		freeChanges(tempChange);
-		free(temp);
 
 		last = last->prev;
 		last->next= NULL;
+		free(temp);
+
 	}
 }
 
@@ -65,7 +66,13 @@ int isEmpty(){
 }
 
 void freeChanges(Change* changes) {
+	printf("in free changes\n");
+	if (changes == NULL){
+		printf("change is null\n");
+		return;
+	}
 	if (changes->next != NULL ) {
+		printf("change");
 		freeChanges(changes->next);
 	}
 	free(changes);

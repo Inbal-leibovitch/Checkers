@@ -105,6 +105,7 @@ int iterativeBT(){
 				break;
 			}
 		}
+ 		free(current);
 	}
 	freeStack();
 	return numOfSol;

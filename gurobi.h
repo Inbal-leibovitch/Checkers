@@ -10,7 +10,7 @@
 
 #define GUROBIERROR "Error: gurobi error\n"
 
-int gurobi();
+int ILPSolver();
 
 
 #endif /* GUROBI_H_ */
