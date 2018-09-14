@@ -15,21 +15,22 @@
 #include "game.h"
 #include "list.h"
 #include "stack.h"
+#include "actions.h"
+#include "mainUtils.h"
 /*
  * gets command from user and call parse.
  */
 int GameMode=0;
 
 int main(){
-	char str[256];
+	char str[MAXCommand];
 	top = NULL;
 	printf("Sudoku\n------\n");
 	SP_BUFF_SET();
 	srand(time(NULL));
 
 	/*initialize undo/redo doubly linked list*/
-
-
+	clearSTR(str);
 	board.BoardAllocated=0;
 	head = (Move*) malloc(sizeof(Move));
 	if (head == NULL){
@@ -43,14 +44,15 @@ int main(){
 	last = head;
 
 	printf("Enter your command:\n");
+
 	while(fgets(str, MAXCommand, stdin)!=NULL)
 	{
 		parse(str);
 		printf("Enter your command:\n");
+		clearSTR(str);
 	}
-	/**
-	 * exitGame();
-	 */
+	exitGame();
+
 
 	return 0;
 }

@@ -16,7 +16,7 @@ int ILPSolver() {
 	int col = board.col;
 	GRBenv *env = NULL;
 	GRBmodel *model = NULL;
-	int opt; /* 1=boardSolvable, -1=error, 0=boardUnsolvable
+	int opt; /* 1=boardSolvable, -1=error, 0=boardUnsolvable*/
 
 	int* ind;
 	double* val;
