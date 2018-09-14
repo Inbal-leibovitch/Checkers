@@ -27,6 +27,7 @@ typedef struct{
 	int N;
 	int numBlanks;
 	int solved;/** solved =0 if puzzle not solved, else 1 */
+	int BoardAllocated; /*is 0 before first board is allocated*/
 }Board;
 
 Board board;

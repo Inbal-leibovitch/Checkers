@@ -9,13 +9,11 @@
 #include "gurobi.h"
 
 extern int GameMode;
-extern int BoardAllocated;
 
 void solve(char* fileName) {
 
 	FILE* fp = NULL;
 	fp = fopen(fileName, "r");
-	printf("mark_errors is %d", board.markError);
 	if (fp == NULL ) {
 		printf(FILEERROR);
 		return;
@@ -29,7 +27,6 @@ void edit(char* fileName) {
 
 	FILE* fp = NULL;
 	fp = fopen(fileName, "r");
-	printf("mark_errors is %d", board.markError);
 	if (fp == NULL ) {
 		printf("Error: File cannot be opened\n");
 		/*
@@ -109,7 +106,6 @@ void printBoard() {
 void set(int x, int y, int z) {
 	Cell prevCell;
 	int prevValue;
-	printf("y=%d\n", y);
 	/** Checks if all three parameters are in the right range */
 	if (x <= 0 || x > board.N || y <= 0 || y > board.N || z < 0
 			|| z > board.N) {
@@ -123,6 +119,10 @@ void set(int x, int y, int z) {
 		return;
 	}
 	prevValue = board.gameBoard[y-1][x-1].value;
+	if (z == prevValue){
+		printBoard();
+		return;
+	}
 	/** if value is 0, delete current value in cell*/
 	prevCell.value = board.gameBoard[y - 1][x - 1].value;
 	prevCell.error = board.gameBoard[y - 1][x - 1].error;
@@ -159,7 +159,6 @@ void set(int x, int y, int z) {
 	/* if game is in solve mode and there are no more blanks cells the board is validated **/
 	if (board.numBlanks == 0) {
 		if (GameMode == 1) { /**if game is in solve mode - validate board */
-			printf("here");
 			if (validateFullBoard() == 0) {
 				printf("Puzzle solution erroneous\n");
 			} else {
@@ -480,6 +479,7 @@ void chooseYCells(int y)
 		last = current;
 	}
 }
+
 void clearValue(){
 	int i = 0, j = 0;
 	for (i = 0; i < board.N; i++) {
@@ -622,9 +622,9 @@ void saveTofile(FILE* fp){
 			if (board.gameBoard[i][j].fixed==1 || (GameMode==2&&board.gameBoard[i][j].value!=0)){
 				fputc('.',fp);
 			}
-			if (board.gameBoard[i][j].error==1){
+			/*if (board.gameBoard[i][j].error==1){
 				fputc('*', fp);
-			}
+			}*/
 			fputc(' ', fp);
 		}
 		if (i!=board.N-1){
@@ -808,9 +808,7 @@ void freeUndoRedo() {
 	while (last != head) {
 		Move* temp = last;
 		Change* tempChange = temp->headOfChanges;
-		printf("before free changes");
 		freeChanges(tempChange);
-		printf("after free changes");
 		last = last->prev;
 		last->next = NULL;
 		free(temp);
@@ -822,13 +820,11 @@ void freeUndoRedo() {
 
 void freeBoard() {
 	int i;
-	if (BoardAllocated==1){
+	if (board.BoardAllocated==1){
 		for (i = 0; i < board.N; i++) {
 			free(board.gameBoard[i]);
-			printf("free %d row\n",i);
 		}
 		free(board.gameBoard);
-		printf("free board\n");
 	}
 }
 

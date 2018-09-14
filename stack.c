@@ -59,7 +59,7 @@ int iterativeBT(){
 	int i=0, j=0, val=0, numOfSol=0;
 	int flagBreak =0;
  	copyToTemp();
- 	printBoardTempSol();
+ 	/*printBoardTempSol();*/
 	push(-1,-1,0);
 	while (isStackEmpty()==0){
 		if (findEmptyCell()==0){

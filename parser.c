@@ -24,7 +24,8 @@ void parse(char str[MAXCommand]) {
 	char* fileName;
 	int x = 0, y = 0, z = 0;
 	char* end;
-	int mark = 0;
+	int mark = 0, notInRange=0;
+
 	/**  first token */
 	token = strtok(str, s);
 
@@ -112,11 +113,12 @@ void parse(char str[MAXCommand]) {
 		if (token != NULL ) {
 			x = strtol(token, &end, 10);
 			if (end == token) {
-				printErrorNotInRange(board.N);
+				notInRange=1;
+			/*	printErrorNotInRange(board.N);*/
 				/**
 				 *  5d in set, page 7
 				 **/
-				return;
+				/*return;*/
 			}
 		} else {
 			printf(INVALIDCOMMAND);
@@ -126,11 +128,12 @@ void parse(char str[MAXCommand]) {
 		if (token != NULL ) {
 			y = strtol(token, &end, 10);
 			if (end == token) {
-				printErrorNotInRange(board.N);
+				notInRange=1;
+				/*printErrorNotInRange(board.N);*/
 				/**
 				 *  5d in set, page 7
 				 **/
-				return;
+				/*return;*/
 			}
 		} else {
 			printf(INVALIDCOMMAND);
@@ -140,14 +143,19 @@ void parse(char str[MAXCommand]) {
 		if (token != NULL ) {
 			z = strtol(token, &end, 10);
 			if (end == token) {
-				printErrorNotInRange(board.N);
-				/**
+				notInRange=1;
+				/*printErrorNotInRange(board.N);
+*/				/**
 				 *  5d in set, page 7
 				 **/
-				return;
+				/*return;*/
 			}
 		} else {
 			printf(INVALIDCOMMAND);
+			return;
+		}
+		if (notInRange==1){
+			printErrorNotInRange(board.N);
 			return;
 		}
 		set(x, y, z);
@@ -177,8 +185,9 @@ void parse(char str[MAXCommand]) {
 		if (token != NULL ) {
 			x = strtol(token, &end, 10);
 			if (end == token) {
-				printErrorNotInRange(board.numBlanks);
-				return;
+				notInRange=1;
+				/*printErrorNotInRange(board.numBlanks);
+				return;*/
 			}
 		} else {
 			printf(INVALIDCOMMAND);
@@ -188,11 +197,16 @@ void parse(char str[MAXCommand]) {
 		if (token != NULL ) {
 			y = strtol(token, &end, 10);
 			if (end == token) {
-				printErrorNotInRange(board.numBlanks);
-				return;
+				notInRange=1;
+				/*printErrorNotInRange(board.numBlanks);
+				return;*/
 			}
 		} else {
 			printf(INVALIDCOMMAND);
+			return;
+		}
+		if (notInRange==1){
+			printErrorNotInRange(board.numBlanks);
 			return;
 		}
 		generate(x, y);
@@ -251,12 +265,13 @@ void parse(char str[MAXCommand]) {
 		if (token != NULL ) {
 			x = strtol(token, &end, 10);
 			if (end == token) {
-				printf("Error: value not in range 1-%d\n", board.N);
+				notInRange=1;
+				/*printf("Error: value not in range 1-%d\n", board.N);*/
 				/**
 				 * 11d in hint, page 9
 				 **/
 
-				return;
+				/*return;*/
 			}
 		} else {
 			printf(INVALIDCOMMAND);
@@ -266,14 +281,19 @@ void parse(char str[MAXCommand]) {
 		if (token != NULL ) {
 			y = strtol(token, &end, 10);
 			if (end == token) {
-				printf("Error: value not in range 1-%d\n", board.N);
+				notInRange=1;
+				/*printf("Error: value not in range 1-%d\n", board.N);*/
 				/**
 				 * 11d in hint, page 9
 				 **/
-				return;
+				/*return;*/
 			}
 		} else {
 			printf(INVALIDCOMMAND);
+			return;
+		}
+		if (notInRange==1){
+			printf("Error: value not in range 1-%d\n", board.N);
 			return;
 		}
 		hint(x, y);

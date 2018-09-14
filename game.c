@@ -11,7 +11,7 @@
 #include "list.h"
 
 extern int GameMode;
-extern int BoardAllocated;
+
 /*
  * asks user for number of cells to fill until a valild number is given.
  * allocates memory for puzzle and solution boards.
@@ -23,9 +23,10 @@ void createBoard(FILE* fp) {
 	int i = 0, j = 0;
 	int c, flag = 1; /*flag=0--->whileNumber, flag=1--->whileSpace/. 	*/
 	int number = 0;
+	int countRow =0; /*number of numbers in row so far*/
 	/** row is number of row in small block  row=m , col=n */
 	fscanf(fp, "%d %d", &row, &col);
-	if (BoardAllocated == 1) {
+	if (board.BoardAllocated == 1) {
 		while (current != head) {
 			undo(0);
 		}
@@ -37,7 +38,7 @@ void createBoard(FILE* fp) {
 	board.col = col;
 	board.N = row * col;
 	board.numBlanks = board.N*board.N;
-	if (BoardAllocated == 0){
+	if (board.BoardAllocated == 0){
 		board.markError=1;
 	}
 	/**allocate memory for boards*/
@@ -73,6 +74,7 @@ void createBoard(FILE* fp) {
 					j++;
 					flag = 1;
 					number = 0;
+					countRow++;
 				}
 				if (c == '.') {
 					if (GameMode==2){
@@ -82,19 +84,21 @@ void createBoard(FILE* fp) {
 						board.gameBoard[i][j - 1].fixed = 1;
 					}
 				}
-				if (c== '*'){
+				/*if (c== '*'){
 					board.gameBoard[i][j-1].error =1;
-				}
+				}*/
 			}
-			if (c == EOF || c == '\n') {
+			if (c == EOF || countRow == board.N) {
 				if (j != 0) {
 					i++;
+					countRow=0;
 				}
 				break;
 			}
 		}
 	}
-	BoardAllocated=1;
+	board.BoardAllocated=1;
+	CheckForErrors();
 	printBoard();
 }
 
@@ -102,7 +106,7 @@ void createEmptyBoard() {
 	int row = 3, col = 3;
 	int i, j;
 	/** row is number of row in small block  row=m , col=n */
-	if (BoardAllocated == 1) {
+	if (board.BoardAllocated == 1) {
 		while (current != head) {
 			undo(0);
 		}
@@ -114,7 +118,7 @@ void createEmptyBoard() {
 	board.col = col;
 	board.N = row * col;
 	board.numBlanks = board.N*board.N;
-	if (BoardAllocated==0){
+	if (board.BoardAllocated==0){
 		board.markError=1;
 	}
 	/**allocate memory for boards*/
@@ -141,6 +145,6 @@ void createEmptyBoard() {
 			board.gameBoard[i][j].tempSol=0;
 		}
 	}
-	BoardAllocated=1;
+	board.BoardAllocated=1;
 	printBoard();
 }

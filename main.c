@@ -19,7 +19,6 @@
  * gets command from user and call parse.
  */
 int GameMode=0;
-int BoardAllocated=0;
 
 int main(){
 	char str[256];
@@ -31,8 +30,12 @@ int main(){
 	/*initialize undo/redo doubly linked list*/
 
 
-
+	board.BoardAllocated=0;
 	head = (Move*) malloc(sizeof(Move));
+	if (head == NULL){
+		printf(CALLOC);
+		exit(1);
+	}
 	head->next = NULL; /*head->next is the first element in the list*/
 	head->prev = NULL;
 	head->headOfChanges = NULL;
