@@ -14,6 +14,7 @@
 #include "list.h"
 #include "stack.h"
 #include "gurobi.h"
+#include "actionsUtils.h"
 
 extern int GameMode;
 
