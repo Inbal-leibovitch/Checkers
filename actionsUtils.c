@@ -1,8 +1,7 @@
 /*
  * actionsUtils.c
  *
- *  Created on: 15 בספט 2018
- *      Author: Tal
+ *this module contains functions that are used by the actions.c module
  */
 
 #include <string.h>
