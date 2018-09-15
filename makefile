@@ -15,7 +15,7 @@ mainUtils.o: mainUtils.c parser.h
 	$(CC) $(COMP_FLAG) $(GUROBI_COMP) -c $*.c
 game.o: game.c game.h actions.h list.h actionsUtils.h
 	$(CC) $(COMP_FLAG) $(GUROBI_COMP) -c $*.c
-parser.o: parser.c parser.h game.h actions.h 
+parser.o: parser.c parser.h game.h actions.h actionsUtils.h
 	$(CC) $(COMP_FLAG) $(GUROBI_COMP) -c $*.c
 actions.o: actions.c actions.h game.h parser.h list.h stack.h gurobi.h actionsUtils.h
 	$(CC) $(COMP_FLAG) $(GUROBI_COMP) -c $*.c

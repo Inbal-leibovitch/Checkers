@@ -1,8 +1,5 @@
 /*
- * actions.h
- *
- *  Created on: 20 баев 2018
- *      Author: inbal
+ * This module contains functions that executes all the commands received from the user.
  */
 
 #ifndef ACTIONS_H_
@@ -25,23 +22,37 @@
 #define CONTAINSVALUE "Error: cell already contains a value\n"
 #define VALIDATIONFAILED "Error: board validation failed\n"
 
+/* load a game from the file and start it in solve mode*/
 void solve (char* fileName);
+/* load a game from the file and start it in edit mode*/
 void edit(char* fileName);
+/*load empty board and start it in edit mode*/
 void editEmpty();
+/* change the value of mark_errors to the value of x*/
 void markErrors(int x);
+/*print the board*/
 void printBoard();
+/*set value z to cell x,y, if z is a valid value*/
 void set(int x, int y, int z);
-void printErrorNotInRange();
+/* validate the board is solvable */
 void validate();
+/*generate new board from an empty board*/
 void generate(int x, int y);
-void printErrorEmptyCells();
+/*undo the last move*/
 void undo();
+/*redo a move*/
 void redo();
+/*save the board to a new file */
 void save(char* fileName);
+/*prints hint to cell x,y */
 void hint (int x, int y);
+/*prints the number of possible solutions to the current board */
 void numSolutions();
+/*autofill all the empty cells that have only one valid value */
 void autofill();
+/*reset the board to it's initial state*/
 void reset();
+/*exit the game*/
 void exitGame();
 
 

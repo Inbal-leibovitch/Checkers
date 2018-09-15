@@ -1,8 +1,6 @@
 /*
  * actionsUtils.c
- *
- *  Created on: 15 בספט 2018
- *      Author: Tal
+ *this module contains functions that are used by the actions.c module
  */
 
 #include <string.h>
@@ -19,7 +17,8 @@
 extern int GameMode;
 
 /**
- * return 1 if board is valid
+ * checks all cell in board if they are valid with validValue function
+ * return 1 if board is valid and 0 if it is not
  */
 int validateFullBoard() {
 
@@ -41,6 +40,10 @@ int validateFullBoard() {
 	return 1;
 }
 
+/*
+ * checks if there are any cell in the board that are marked as error and they are not
+ * if such cell is found then set error to 0
+ */
 void unErrorBoard() {
 	int i = 0, j = 0, value;
 	int valid = 0;
@@ -61,7 +64,10 @@ void unErrorBoard() {
 	}
 	return;
 }
-
+/**
+ * check board for cells that are erronous and not marked with error,
+ * if such cell if found set error to 1
+ */
 void CheckForErrors() {
 	int i = 0, j = 0, value;
 	int valid = 0;
@@ -83,11 +89,10 @@ void CheckForErrors() {
 	return;
 }
 
-/**
- * returns 1 if value is valid, else return 0.
- * x = col, y=row
- * autofill if autofill=1
- */
+/*
+ * check if the value z is valid in cell with row=y col=x
+ * returns 1 if the value is valid, else return 0.
+  */
 int validValue(int x, int y, int z) {
 	int i = 0, j = 0;
 	int row = 0, col = 0;
@@ -131,7 +136,8 @@ int validValue(int x, int y, int z) {
 }
 
 /*
- * return 1 if board is erroneous
+ * check if there is a cell with error in board
+ * return 1 if board an erroneous cell is found
  */
 int isErroneous() {
 	int i = 0, j = 0;
@@ -145,7 +151,17 @@ int isErroneous() {
 	return 0;
 }
 
+/*
+ * print error message with range X
+ */
+void printErrorNotInRange(int X) {
+	printf("Error: value not in range 0-%d\n", X);
+}
 
+/*
+ * changes pointers i and j to point to a random row and col
+ *  that do not have a value in the board yet
+ */
 void randEmptyCell(int* i, int* j) {
 	do {
 		*i = rand() % board.N;
@@ -154,6 +170,7 @@ void randEmptyCell(int* i, int* j) {
 }
 
 /*
+ * chooses X random cell and fills them with random values
  * return 1 if all cell were filled
  * 0 if a cell has no legal value available
  */
@@ -193,7 +210,7 @@ int fillXCells(int x) {
 }
 
 /*
- * clears all value fields to 0
+ * clears all value and tempSol fields in cells to 0
  */
 void clearBoard() {
 	int i = 0, j = 0;
@@ -205,6 +222,11 @@ void clearBoard() {
 	}
 }
 
+/*
+ * choose Y cells randomly and clears all other cells
+ * saves the values of these Y cells and add them to a new move for the
+ * undo/redo list
+ */
 void chooseYCells(int y) {
 	int k = 0, i = 0, j = 0;
 	Change* currentChange = NULL;
@@ -218,7 +240,7 @@ void chooseYCells(int y) {
 		randEmptyCell(&i, &j);
 		board.gameBoard[i][j].value = board.gameBoard[i][j].tempSol;
 		board.numBlanks--;
-		if (move == NULL ) {
+		if (move == NULL ) { /*if a new move was not allocated yet*/
 			move = (Move*) malloc(sizeof(Move));
 			if (move == NULL ) {
 				printf(CALLOC);
@@ -233,13 +255,13 @@ void chooseYCells(int y) {
 		}
 		temp->row = i;
 		temp->col = j;
-
+		/*the values of the cell before generate*/
 		temp->before.autofill = 0;
 		temp->before.error = 0;
 		temp->before.fixed = 0;
 		temp->before.tempSol = 0;
 		temp->before.value = 0;
-
+		/*the values of the cell after generate*/
 		temp->after.autofill = 0;
 		temp->after.error = 0;
 		temp->after.fixed = 0;
@@ -247,7 +269,7 @@ void chooseYCells(int y) {
 		temp->after.value = board.gameBoard[i][j].value;
 
 		temp->next = NULL;
-
+		/*add the change to list of changes in the move*/
 		if (move->headOfChanges == NULL ) {
 			move->headOfChanges = temp;
 			currentChange = temp;
@@ -256,7 +278,7 @@ void chooseYCells(int y) {
 			currentChange = temp;
 		}
 	}
-
+	/*add move to list of moves*/
 	if (move != NULL ) {
 		clearMoves(); /*clear rest of moves list*/
 		if (isEmpty() == 1) {
@@ -271,7 +293,9 @@ void chooseYCells(int y) {
 		last = current;
 	}
 }
-
+/*
+ * sets all cells value in board to 0
+ */
 void clearValue() {
 	int i = 0, j = 0;
 	for (i = 0; i < board.N; i++) {
@@ -280,7 +304,9 @@ void clearValue() {
 		}
 	}
 }
-
+/*
+ * sets all cells tempSol in board to 0
+ */
 void clearTempSol() {
 	int i = 0, j = 0;
 	for (i = 0; i < board.N; i++) {
@@ -290,7 +316,10 @@ void clearTempSol() {
 	}
 }
 
-
+/*
+ *saves the current board to a file in the specified format
+ *if in edit mode all cells are marked as fixed.
+ */
 void saveTofile(FILE* fp) {
 	int i = 0, j = 0;
 	fputc(board.row + '0', fp);
@@ -304,9 +333,6 @@ void saveTofile(FILE* fp) {
 					|| (GameMode == 2 && board.gameBoard[i][j].value != 0)) {
 				fputc('.', fp);
 			}
-			/*if (board.gameBoard[i][j].error==1){
-			 fputc('*', fp);
-			 }*/
 			fputc(' ', fp);
 		}
 		if (i != board.N - 1) {
@@ -316,7 +342,10 @@ void saveTofile(FILE* fp) {
 	fclose(fp);
 }
 
-
+/*
+ * copies values from autofill field in cells to value field
+ * and creates the list of changes and a new move to add to the undo/redo list
+ */
 void updateBoardAndList() {
 	int i = 0, j = 0;
 	Change* currentChange = NULL;
@@ -385,7 +414,10 @@ void updateBoardAndList() {
 		last = current;
 	}
 }
-
+/*
+ * checks for each cell if there is only one number that is valid for that cell
+ * if only one value is valid then it sets autofill field in that cell to the value
+ */
 void fillValuesInAutofill() {
 	int i = 0, j = 0, k = 0, value = 0;
 	for (i = 0; i < board.N; i++) {
@@ -411,6 +443,9 @@ void fillValuesInAutofill() {
 	}
 }
 
+/*
+ * sets all autofill fields in all cells in the board to 0
+ */
 void clearAutofill() {
 	int i = 0, j = 0;
 	for (i = 0; i < board.N; i++) {
@@ -420,7 +455,9 @@ void clearAutofill() {
 	}
 }
 
-
+/*
+ * frees all moves in the undo/redo list and all changes in every move.
+ */
 void freeUndoRedo() {
 	while (last != head) {
 		Move* temp = last;
@@ -435,6 +472,9 @@ void freeUndoRedo() {
 	}
 }
 
+/*
+ * frees all rows in board.gameBoard and also frees board.gameBoard
+ */
 void freeBoard() {
 	int i;
 	if (board.BoardAllocated == 1) {
@@ -445,6 +485,9 @@ void freeBoard() {
 	}
 }
 
+/*
+ * frees board resources and undo/redo list
+ */
 void freeResources() {
 	freeUndoRedo();
 	freeBoard();

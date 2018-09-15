@@ -1,3 +1,7 @@
+/*
+ * This module contains functions that executes all the commands received from the user.
+ */
+
 #include <string.h>
 #include<stdio.h>
 #include<stdlib.h>
@@ -11,6 +15,7 @@
 
 extern int GameMode;
 
+/* load a game from the file and start it in solve mode*/
 void solve(char* fileName) {
 
 	FILE* fp = NULL;
@@ -24,6 +29,7 @@ void solve(char* fileName) {
 	fclose(fp);
 }
 
+/* load a game from the file and start it in edit mode*/
 void edit(char* fileName) {
 
 	FILE* fp = NULL;
@@ -37,13 +43,16 @@ void edit(char* fileName) {
 	fclose(fp);
 }
 
+/*load empty board and start it in edit mode*/
 void editEmpty() {
 	GameMode = 2;
 	createEmptyBoard();
 }
 
-/*checked in parser that we are in solve mode, and that
- * this is a number */
+/*
+ * change the value of mark_errors to the value of x
+ * the value of  is 0 or 1 only
+ */
 void markErrors(int x) {
 	if (x != 0 && x != 1) {
 		printf(MARKERROR);
@@ -52,6 +61,7 @@ void markErrors(int x) {
 	board.markError = x;
 }
 
+/*print the board*/
 void printBoard() {
 	int i = 0, j = 0, k = 0;
 	for (i = 0; i < board.N * 4 + board.row + 1; i++) {
@@ -70,6 +80,7 @@ void printBoard() {
 			}
 			if (board.gameBoard[i][j].fixed == 1) {
 				printf(".");
+			/*mark erroneous values in edit mode or if mark_errors==1*/
 			} else if (GameMode == 2 || board.markError == 1) {
 				if (board.gameBoard[i][j].error == 1) {
 					printf("*");
@@ -95,8 +106,7 @@ void printBoard() {
 }
 
 /*
- * Set value z to row=x, col=y, if legal.
- * Must be in edit or solve mode before calling this function.
+ * Set value z to x,y, if z is valid value
  */
 void set(int x, int y, int z) {
 	Cell prevCell;
@@ -113,12 +123,13 @@ void set(int x, int y, int z) {
 		printf(FIXED);
 		return;
 	}
+	/** if value doesn't change - ignore the command */
 	prevValue = board.gameBoard[y - 1][x - 1].value;
 	if (z == prevValue) {
 		printBoard();
 		return;
 	}
-	/** if value is 0, delete current value in cell*/
+	/*create prev cell for the undo-redo list*/
 	prevCell.value = board.gameBoard[y - 1][x - 1].value;
 	prevCell.error = board.gameBoard[y - 1][x - 1].error;
 	prevCell.fixed = board.gameBoard[y - 1][x - 1].fixed;
@@ -126,16 +137,20 @@ void set(int x, int y, int z) {
 	board.gameBoard[y - 1][x - 1].value = 0;
 	board.gameBoard[y - 1][x - 1].error = 0;
 
+	/*redmove erors from the board after changing the cell value to 0*/
 	unErrorBoard();
-
+	/** if value is 0, delete current value in cell*/
 	if (z == 0) {
 		board.gameBoard[y - 1][x - 1].value = 0;
 		board.gameBoard[y - 1][x - 1].error = 0;
 		if (prevValue != 0) {
 			board.numBlanks++;
 		}
-	} else {
-		/** set the value and mark error if value is wrong */
+	}
+	/* set the value and mark error if value is wrong
+	 * validValue function also mark errors if necessary
+	 */
+	else {
 		if (validValue(x, y, z) == 0) {
 			board.gameBoard[y - 1][x - 1].error = 1;
 		} else {
@@ -146,8 +161,9 @@ void set(int x, int y, int z) {
 			board.numBlanks--;
 		}
 	}
-
+	/*clear undo-redo list after set move*/
 	clearMoves();
+	/*add move to the indo-redo list*/
 	addMove(x, y, z, prevCell);
 
 	printBoard();
@@ -165,18 +181,7 @@ void set(int x, int y, int z) {
 	}
 }
 
-
-/*
- * TODO: the function return 1 if the board has no errors, else return 0
- * use ILP
- */
-
-/* *****************************************/
-void printErrorNotInRange(int X) {
-	printf("Error: value not in range 0-%d\n", X);
-}
-/* *****************************************/
-
+/* validate the board is solvable using ILP */
 void validate() {
 
 	if (isErroneous() == 1) {
@@ -191,6 +196,10 @@ void validate() {
 	printf(UNSOLVABLE);
 }
 
+/*generate a board by randomly choosing x cells the fill, solving the board using ILP and leave in it y cells
+ * only available in edit mode
+ * if x>number of empty cells or if the board is not empty the command is not executed
+ */
 void generate(int x, int y) {
 	int i;
 	if (x > board.numBlanks || y > board.numBlanks) {
@@ -222,7 +231,9 @@ void generate(int x, int y) {
 	return;
 }
 
-/*if print==1 - prints output is provided*/
+/* undo a move from the undo-redo list, if there is a move to undo
+ * if print==1 , prints output is provided
+ */
 void undo(int print) {
 	Change* change;
 	Change* spare;
@@ -266,7 +277,7 @@ void undo(int print) {
 	}
 	current = current->prev;
 }
-
+/* undo a move from the undo-redo list, if there is a move to undo*/
 void redo() {
 	Change* change;
 	Change* spare;
@@ -307,10 +318,11 @@ void redo() {
 	}
 
 }
-
+/*save the current board to a file named filename */
 void save(char* fileName) {
 	FILE* fp = NULL;
 
+	/* check in edit mode if the board is erroneous*/
 	if (GameMode == 2) {
 		if (isErroneous() == 1) {
 			printf(ERRONEOUS);
@@ -332,22 +344,29 @@ void save(char* fileName) {
 	return;
 }
 
+/* provide a hint to cell x,y, using ILP to solve the board
+ 	 only available in solve mode*
+ */
 void hint(int x, int y) {
 	int solvable = 0;
+	/*the command is not executed if the board is erroneous*/
 	if (isErroneous() == 1) {
 		printf(ERRONEOUS);
 		return;
 	}
+	/*the command is not executed if the cell is fixed*/
 	if (board.gameBoard[y - 1][x - 1].fixed == 1) {
 		printf(FIXED);
 		return;
 	}
+	/*the command is not executed if the cell contains value*/
 	if (board.gameBoard[y - 1][x - 1].value != 0) {
 		printf(CONTAINSVALUE);
 		return;
 	}
 	clearTempSol();
 	solvable = ILPSolver();
+	/*checks if the board is solvable using ILP*/
 	if (solvable != 1) {
 		printf(UNSOLVABLE);
 		return;
@@ -355,13 +374,15 @@ void hint(int x, int y) {
 	printf("Hint: set cell to %d\n", board.gameBoard[y - 1][x - 1].tempSol);
 }
 
+/*return the number of possible solutions to the current board*/
 void numSolutions() {
 	int numSolutions;
+	/*the command is not executed if the board is erroneous*/
 	if (isErroneous() == 1) {
 		printf(ERRONEOUS);
 		return;
 	}
-	/*exhustive backtracking*/
+	/*computing the number of solutions using exhaustive backtracking*/
 	numSolutions = iterativeBT();
 	printf("Number of solutions: %d\n", numSolutions);
 	if (numSolutions == 1) {
@@ -372,13 +393,17 @@ void numSolutions() {
 	}
 }
 
+/*autofill all the cells that have only one valid value*/
 void autofill() {
 	clearAutofill();
+	/*the command is not executed if the board is erroneous*/
 	if (isErroneous() == 1) {
 		printf(ERRONEOUS);
 		return;
 	}
+	/*fill values in autofill field of each cell*/
 	fillValuesInAutofill();
+	/*copy the solution from cell.autofill to cell.value and updates undo-redo list */
 	updateBoardAndList();
 
 	unErrorBoard(); /*needed because validValue adds unnecessary errors*/
@@ -390,6 +415,7 @@ void autofill() {
 	}
 }
 
+/*reset the board to it's initial state by undoing all moves in the undo-redo list*/
 void reset() {
 	while (current != head) {
 		undo(0);
@@ -399,6 +425,7 @@ void reset() {
 	printf(BOARDRESET);
 	printBoard();
 }
+/*exit the programs and frees all resources that were allocated*/
 void exitGame() {
 	freeResources();
 	printf(EXITING);

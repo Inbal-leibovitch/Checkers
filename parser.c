@@ -10,7 +10,7 @@
 #include "parser.h"
 #include "actions.h"
 #include "game.h"
-
+#include "actionsUtils.h"
 extern int GameMode;
 
 /* input is String command from user
