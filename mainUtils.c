@@ -1,8 +1,6 @@
 /*
  * mainUtils.c
- *
- *  Created on: 14 בספט 2018
- *      Author: inbal
+ * functions used by main.c
  */
 #include "parser.h"
 #include "mainUtils.h"
@@ -25,6 +23,9 @@ int checkForEOF(char* str){
 	return 0;
 }
 
+/*
+ * sets all chars in str to 0
+ */
 void clearSTR(char* str){
 	int i=0;
 	for (i=0; i<MAXCommand; i++){

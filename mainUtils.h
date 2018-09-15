@@ -1,14 +1,14 @@
 /*
  * mainUtils.h
- *
- *  Created on: 14 בספט 2018
- *      Author: inbal
+ * functions used by main.c
  */
 
 #ifndef MAINUTILS_H_
 #define MAINUTILS_H_
 
+/* return 1 if EOF is found*/
 int checkForEOF(char str[MAXCommand]);
+/* sets all chars in str to 0*/
 void clearSTR(char* str);
 
 #endif /* MAINUTILS_H_ */

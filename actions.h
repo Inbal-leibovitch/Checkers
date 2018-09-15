@@ -43,21 +43,6 @@ void numSolutions();
 void autofill();
 void reset();
 void exitGame();
-int validateFullBoard();
-int validValue(int x, int y, int z);
-void freeUndoRedo();
-void freeBoard();
-void unErrorBoard();
-int isErroneous();
-void freeResources();
-void saveTofile(FILE* fp);
-int fillXCells(int x);
-void clearBoard();
-void chooseYCells(int y);
-void randEmptyCell(int* i, int* j);
-void clearValue();
-void clearTempSol();
-void clearAutofill();
-void CheckForErrors();
+
 
 #endif /* ACTIONS_H_ */

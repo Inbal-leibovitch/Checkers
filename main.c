@@ -1,12 +1,11 @@
 /*
  * main.c
+ * starts a sudoku console game
+ * asks the user for commands and waits until one is given
+ * then call parser to parse and execute the command
  *
- *  Created on: 22 במאי 2018
- *      Author: inbal
  */
-/**
-#include "parser.h"
-#include "game.h"*/
+
 #include "parser.h"
 #include "SPBufferset.h"
 #include<time.h>
@@ -14,12 +13,12 @@
 #include<stdlib.h>
 #include "game.h"
 #include "list.h"
+#include "mainUtils.h"
 #include "stack.h"
 #include "actions.h"
-#include "mainUtils.h"
-/*
- * gets command from user and call parse.
- */
+#include "actionsUtils.h"
+
+/* GameMode - for game mode init GameMode=0, for game mode solve GameMode=1, for game mode edit GameMode=2*/
 int GameMode=0;
 
 int main(){
@@ -29,9 +28,10 @@ int main(){
 	SP_BUFF_SET();
 	srand(time(NULL));
 
+	clearSTR(str); /*initialize str to be empty*/
+	board.BoardAllocated=0; /*no board allocated yet*/
+
 	/*initialize undo/redo doubly linked list*/
-	clearSTR(str);
-	board.BoardAllocated=0;
 	head = (Move*) malloc(sizeof(Move));
 	if (head == NULL){
 		printf(CALLOC);
@@ -44,16 +44,14 @@ int main(){
 	last = head;
 
 	printf("Enter your command:\n");
-
 	while(fgets(str, MAXCommand, stdin)!=NULL)
 	{
 		parse(str);
 		printf("Enter your command:\n");
 		clearSTR(str);
 	}
+	/* where EOF is reached*/
 	exitGame();
-
-
 	return 0;
 }
 

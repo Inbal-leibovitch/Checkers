@@ -1,32 +1,30 @@
 /*
  * game.c
- *
- *  Created on: 22 баев 2018
- *      Author: inbal
+ *this module creates a new gameboard by allocating memory to the 2-d array of Cells.
+ *each cell is filled with a number according to the file. if no file is given then an empty board is created.
  */
 #include "game.h"
 #include "actions.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "list.h"
+#include "actionsUtils.h"
 
 extern int GameMode;
 
 /*
- * asks user for number of cells to fill until a valild number is given.
- * allocates memory for puzzle and solution boards.
- * creates a new board with random back tracking and prints the board.
+ * creates a new board and fill up the values of the cells according to the file given.
  */
-
 void createBoard(FILE* fp) {
 	int row = 0, col = 0;
 	int i = 0, j = 0;
-	int c, flag = 1; /*flag=0--->whileNumber, flag=1--->whileSpace/. 	*/
+	int c, flag = 1; /*when reading the file, flag=0 while a number is read, flag=1 while space is read*/
 	int number = 0;
 	int countRow =0; /*number of numbers in row so far*/
+
 	/** row is number of row in small block  row=m , col=n */
 	fscanf(fp, "%d %d", &row, &col);
-	if (board.BoardAllocated == 1) {
+	if (board.BoardAllocated == 1) { /*check if we have already allocated a board in this run of the program*/
 		while (current != head) {
 			undo(0);
 		}
@@ -56,19 +54,20 @@ void createBoard(FILE* fp) {
 		}
 	}
 	i = 0;
+	/*read the file given and add set for each cell it's value, error, autofill and temSol*/
 	while (i < board.N) {
 		j = 0;
 		while ((c = fgetc(fp))) {
-			if (c >= '0' && c <= '9') {
+			if (c >= '0' && c <= '9') { /*read a number*/
 				flag = 0;
 				number = number * 10 + c - '0';
 			} else {
-				if (flag == 0) {
+				if (flag == 0) { /*add the value to the relevant cell*/
 					board.gameBoard[i][j].value = number;
 					board.gameBoard[i][j].error = 0;
 					board.gameBoard[i][j].autofill =0;
 					board.gameBoard[i][j].tempSol=0;
-					if (number!=0){
+					if (number!=0){ /*decrease num blanks by 1*/
 						board.numBlanks--;
 					}
 					j++;
@@ -76,7 +75,7 @@ void createBoard(FILE* fp) {
 					number = 0;
 					countRow++;
 				}
-				if (c == '.') {
+				if (c == '.') { /*if cell is fixed*/
 					if (GameMode==2){
 						board.gameBoard[i][j - 1].fixed = 0;
 					}
@@ -84,11 +83,8 @@ void createBoard(FILE* fp) {
 						board.gameBoard[i][j - 1].fixed = 1;
 					}
 				}
-				/*if (c== '*'){
-					board.gameBoard[i][j-1].error =1;
-				}*/
 			}
-			if (c == EOF || countRow == board.N) {
+			if (c == EOF || countRow == board.N) { /*if enough numbers were read for a row or EOF reached break*/
 				if (j != 0) {
 					i++;
 					countRow=0;
@@ -98,15 +94,18 @@ void createBoard(FILE* fp) {
 		}
 	}
 	board.BoardAllocated=1;
-	CheckForErrors();
+	CheckForErrors(); /*check if there are any errors in the board before print*/
 	printBoard();
 }
 
+/*
+ * creates a new empty board with row=3 and col=3
+ */
 void createEmptyBoard() {
 	int row = 3, col = 3;
 	int i, j;
 	/** row is number of row in small block  row=m , col=n */
-	if (board.BoardAllocated == 1) {
+	if (board.BoardAllocated == 1) { /*check if a board was already allocated in this run of the program*/
 		while (current != head) {
 			undo(0);
 		}
@@ -135,7 +134,7 @@ void createEmptyBoard() {
 			exit(1);
 		}
 	}
-
+	/*set all values of the cells to 0*/
 	for (i = 0; i < board.N; i++) {
 		for (j = 0; j < board.N; j++) {
 			board.gameBoard[i][j].value = 0;
