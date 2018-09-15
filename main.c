@@ -23,7 +23,10 @@ int GameMode=0;
 
 int main(){
 	char str[MAXCommand];
+	char strCopy[MAXCommand];
+	int eofFound =0;
 	top = NULL;
+
 	printf("Sudoku\n------\n");
 	SP_BUFF_SET();
 	srand(time(NULL));
@@ -46,9 +49,27 @@ int main(){
 	printf("Enter your command:\n");
 	while(fgets(str, MAXCommand, stdin)!=NULL)
 	{
+		strcpy(strCopy, str);
 		parse(str);
-		printf("Enter your command:\n");
-		clearSTR(str);
+		if (feof(stdin)==0){ /*end of line not reached*/
+			while (checkForNewLine(strCopy)==0){ /*no new line char found*/
+				clearSTR(str);
+				fgets(str, MAXCommand, stdin);
+				strcpy(strCopy, str);
+				if (feof(stdin)){
+					eofFound =1;
+					break;
+				}
+			}
+			if (eofFound ==1){
+				break;
+			}
+			printf("Enter your command:\n");
+			clearSTR(str);
+		}
+		else{
+			break;
+		}
 	}
 	/* where EOF is reached*/
 	exitGame();

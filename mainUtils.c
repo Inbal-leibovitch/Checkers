@@ -7,19 +7,16 @@
 #include <stdio.h>
 
 /*
- * return -1 if EOF found
+ * return -1 if newline found
  * return 0 if not found
  */
-int checkForEOF(char* str){
+int checkForNewLine(char* str){
 	int i=0;
 	for (i=0; i<MAXCommand; i++){
-		printf("%c",str[i]);
-		if (str[i]==EOF){
-			printf("found\n");
+		if (str[i]=='\n'){
 			return -1;
 		}
 	}
-	printf("\n");
 	return 0;
 }
 

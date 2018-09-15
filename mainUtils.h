@@ -7,7 +7,7 @@
 #define MAINUTILS_H_
 
 /* return 1 if EOF is found*/
-int checkForEOF(char str[MAXCommand]);
+int checkForNewLine(char str[MAXCommand]);
 /* sets all chars in str to 0*/
 void clearSTR(char* str);
 

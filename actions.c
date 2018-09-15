@@ -349,6 +349,11 @@ void save(char* fileName) {
  */
 void hint(int x, int y) {
 	int solvable = 0;
+	/*the command is not executed if x or y are not in range*/
+	if (x <= 0 || x > board.N || y <= 0 || y > board.N ) {
+		printf("Error: value not in range 1-%d\n", board.N);
+		return;
+	}
 	/*the command is not executed if the board is erroneous*/
 	if (isErroneous() == 1) {
 		printf(ERRONEOUS);
